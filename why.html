@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Why Character XI exists &mdash; a short history of getting blocked</title>
+  <meta name="description" content="The origin story of Character XI: a chat site blocked at work, a library and airport filter, a VPN that got noticed, a Tailscale exit node, and one Python prototype that became a single Go executable.">
+  <meta name="theme-color" content="#0a0a12">
+  <meta property="og:title" content="Why Character XI exists &mdash; blocked at work, built at home">
+  <meta property="og:description" content="Everything got blocked. So I wrote my own chat server, asked eight AIs for help, and shipped one executable. Here is the whole ridiculous story.">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon: a lime "XI" on ink -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23c8ff3d%22/><text x=%2232%22 y=%2246%22 font-family=%22Arial%22 font-size=%2230%22 font-weight=%22900%22 text-anchor=%22middle%22 fill=%22%230a0a12%22>XI</text></svg>">
+
+  <link rel="stylesheet" href="css/charxi.css">
+</head>
+<body>
+
+  <!-- ======================================================================
+       Ticker: the origin story, in banner form
+       ====================================================================== -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+      <!-- One set of headlines; js/charxi.js clones it to fill the screen. -->
+      <span class="ticker__item">📠 Origin story &mdash; now with receipts</span>
+      <span class="ticker__item">Blocked at work · blocked at the library · blocked at the airport</span>
+      <span class="ticker__item">One executable, zero Python homework</span>
+      <span class="ticker__item">Shipped by one human and eight AIs</span>
+      <span class="ticker__item">🛰️ Tailscale exit nodes: the real hero</span>
+      <span class="ticker__item">Telegram: the one thing free wifi still allows</span>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Header
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a href="index.html" class="brand">
+          <span class="brand__mark" aria-hidden="true">XI</span>
+          <span>Character XI</span>
+          <span class="brand__badge">$0 tier</span>
+        </a>
+
+        <ul class="nav__menu" id="nav-menu">
+          <li><a class="nav__link" href="#saga">The saga</a></li>
+          <li><a class="nav__link" href="#go">Go vs Python</a></li>
+          <li><a class="nav__link" href="#crew">The pit crew</a></li>
+          <li><a class="nav__link" href="#fork">Fork it</a></li>
+          <li><a class="nav__link" href="index.html#pricing">Rate plans</a></li>
+          <li><a class="nav__link nav__link--demo" href="browser_static.html">Chat assets</a></li>
+        </ul>
+
+        <div class="nav__actions">
+          <a class="btn btn--lime btn--sm" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">Download free</a>
+          <button class="nav__toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-controls="nav-menu" aria-expanded="false">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ====================================================================
+         Hero: the confession
+         ==================================================================== -->
+    <section class="hero why-hero">
+      <div class="container hero__grid why-hero__grid">
+        <div>
+          <p class="hero__eyebrow"><b>Why</b> the app exists</p>
+
+          <h1 class="hero__title">
+            It started with a blocked website.<br>
+            It ended with <em>one executable</em>.
+          </h1>
+
+          <p class="hero__sub">
+            <strong>Character XI</strong> exists because a chat site got filtered at work, the backup
+            site got blocked too, the VPN got noticed, and the only sensible response was to write my
+            own chat server. This is the honest version of that story &mdash; including the parts
+            where I was clearly the problem.
+          </p>
+
+          <div class="hero__actions">
+            <a class="btn btn--lime btn--lg" href="#saga">
+              <span>Read the saga</span>
+              <span aria-hidden="true">&darr;</span>
+            </a>
+            <a class="btn btn--outline btn--lg" href="index.html">
+              <span>Back to the app</span>
+            </a>
+          </div>
+
+          <div class="hero__chips">
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              One executable, no runtime
+            </span>
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Still $0.00
+            </span>
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Telegram because free wifi
+            </span>
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Assembled by a committee of AIs
+            </span>
+          </div>
+        </div>
+
+        <div class="hero__deck">
+          <div class="casefile">
+            <div class="stamp stamp--paid">Case closed</div>
+            <div class="casefile__head">
+              <span>Case file #XI-11</span>
+            </div>
+            <h2 class="casefile__title">The short version</h2>
+            <div class="casefile__rows">
+              <div class="casefile__row casefile__row--bad"><span>Chat site at work</span><b>blocked</b></div>
+              <div class="casefile__row casefile__row--bad"><span>The backup site</span><b>also blocked</b></div>
+              <div class="casefile__row casefile__row--bad"><span>Library &amp; airport wifi</span><b>blocked</b></div>
+              <div class="casefile__row casefile__row--good"><span>The VPN</span><b>worked, briefly</b></div>
+              <div class="casefile__row"><span>Company IT</span><b>😈</b></div>
+              <div class="casefile__row casefile__row--good"><span>Tailscale exit node</span><b>the hero</b></div>
+              <div class="casefile__row casefile__row--bad"><span>The Python prototype</span><b>needed a degree</b></div>
+              <div class="casefile__row casefile__row--good"><span>The Go rewrite</span><b>double-click</b></div>
+            </div>
+            <div class="casefile__total">
+              <span>Total cost</span>
+              <span>$0.00</span>
+            </div>
+            <p class="casefile__foot">
+              Filed under &ldquo;I could just use my phone.&rdquo; Approved by Gemini. Reviewed by
+              nobody&rsquo;s legal department, which is very much the point.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         The saga
+         ==================================================================== -->
+    <section class="section" id="saga">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Exhibit W &mdash; the timeline</span>
+          <h2 class="section__title">A short history of getting blocked</h2>
+          <p class="section__sub">
+            Eight acts, one firewall, and a suspicious number of sentences containing the phrase
+            &ldquo;for a while&rdquo;. No names have been changed, because the firewall already knows
+            who I am.
+          </p>
+        </div>
+
+        <div class="timeline">
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--pink" aria-hidden="true">1</div>
+            <div class="timeline__card">
+              <span class="timeline__where">The office &middot; 3:00 pm</span>
+              <h3>Act I &mdash; The incident</h3>
+              <p>
+                I was using SpicyChat at work, which sounds worse than it was. It was mostly a way to
+                avoid thinking about a spreadsheet. Then one afternoon the proxy decided that domain
+                was a moral hazard, and the block page appeared. Same filter, same font, same
+                &ldquo;this site has been categorised&rdquo; energy.
+              </p>
+            </div>
+          </article>
+
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--violet" aria-hidden="true">2</div>
+            <div class="timeline__card">
+              <span class="timeline__where">Plan B &middot; five minutes later</span>
+              <h3>Act II &mdash; Perchance said no chance</h3>
+              <p>
+                Switched to Perchance. Blocked as well. Turns out when a firewall invents a category
+                called &ldquo;AI chat&rdquo;, it applies it to all of them at once. It was less
+                whack-a-mole and more wall.
+              </p>
+            </div>
+          </article>
+
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--cyan" aria-hidden="true">3</div>
+            <div class="timeline__card">
+              <span class="timeline__where">Libraries, airports, anywhere with a login page</span>
+              <h3>Act III &mdash; The wifi audit</h3>
+              <p>
+                These sites are blocked at libraries and airports too. Free wifi will happily hand
+                you forty minutes of captive portal and a policy that says no. Somewhere out there is
+                a person whose entire job is deciding that my imaginary elf friend is a security
+                risk.
+              </p>
+            </div>
+          </article>
+
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--yellow" aria-hidden="true">4</div>
+            <div class="timeline__card">
+              <span class="timeline__where">It worked! For a while.</span>
+              <h3>Act IV &mdash; The VPN era</h3>
+              <p>
+                So: a VPN. It worked. Great. Then the company blocked the VPN too, which I choose to
+                interpret as a compliment. (😈.) No hard feelings, IT &mdash; you were doing your
+                job. I was very much not doing mine.
+              </p>
+            </div>
+          </article>
+
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--lime" aria-hidden="true">5</div>
+            <div class="timeline__card">
+              <span class="timeline__where">Exit nodes &middot; the actual hero</span>
+              <h3>Act V &mdash; The Tailscale manoeuvre</h3>
+              <p>
+                The fix was Tailscale plus an exit node at home: my traffic leaves through my own
+                house, so the filter sees one extremely boring encrypted tunnel from a laptop that is
+                definitely working. Around the same time I noticed Telegram is not blocked on most
+                free wifi &mdash; which is exactly why this app speaks Telegram. Check your own
+                rules before you become a cautionary tale.
+              </p>
+            </div>
+          </article>
+
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--pink" aria-hidden="true">6</div>
+            <div class="timeline__card">
+              <span class="timeline__where">City of Python &middot; population: me</span>
+              <h3>Act VI &mdash; The Python prototype</h3>
+              <p>
+                Version one was Python, and it worked. On my machine. That is the most dangerous
+                sentence in software. Handing it to a normal person would have meant installing the
+                right Python, installing a pile of packages, fighting a virtual environment, and then
+                explaining to their antivirus why a <code>.py</code> file is allowed to have friends.
+                That is not a download. That is a hobby.
+              </p>
+            </div>
+          </article>
+
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--violet" aria-hidden="true">7</div>
+            <div class="timeline__card">
+              <span class="timeline__where">The pivot</span>
+              <h3>Act VII &mdash; Gemini picks a language</h3>
+              <p>
+                I asked Gemini how to actually ship the thing. She said Go. (She is a she because
+                the app&rsquo;s default voice is an English lady and I refuse to picture a
+                committee.) Go compiles to one executable: download it, double-click it, done. No
+                runtime, no installer, no &ldquo;have you tried adding it to PATH?&rdquo; That one
+                recommendation is the reason this page can exist.
+              </p>
+            </div>
+          </article>
+
+          <article class="timeline__item">
+            <div class="timeline__dot timeline__dot--cyan" aria-hidden="true">8</div>
+            <div class="timeline__card">
+              <span class="timeline__where">This page</span>
+              <h3>Act VIII &mdash; The part you are reading</h3>
+              <p>
+                The app got a name, a website and a surprisingly long FAQ. The goal was never a
+                business. The goal was one file that works when the wifi is hostile and the cloud
+                belongs to somebody else. That is still the goal. There is no roadmap. There is a
+                releases page.
+              </p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Go vs Python
+         ==================================================================== -->
+    <section class="section section--tight" id="go">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Exhibit W-2 &mdash; the pivot</span>
+          <h2 class="section__title">&ldquo;Just install Python&rdquo; is not a distribution strategy</h2>
+          <p class="section__sub">
+            The prototype was fine. The onboarding was a hostage situation. This is what handing
+            somebody the Python version actually required, in order, with feeling.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article class="step">
+            <h3>Find the right Python</h3>
+            <p>
+              Not any Python. The right one, for their operating system, in the right folder, added
+              to the right PATH. This is the exact moment most people quietly close the tab and go
+              back to their lives.
+            </p>
+            <code>python.org/downloads</code>
+          </article>
+
+          <article class="step">
+            <h3>Install the pile</h3>
+            <p>
+              Dependencies, wheels, a virtual environment, and the little ritual where one package
+              refuses to build and politely suggests you install a compiler first.
+            </p>
+            <code>pip install -r requirements.txt</code>
+          </article>
+
+          <article class="step">
+            <h3>Become the help desk</h3>
+            <p>
+              Congratulations: you now provide lifetime support for software you gave away for free.
+              Ticket one is always the same three words, and it is never your fault.
+            </p>
+            <code>"it says command not found"</code>
+          </article>
+        </div>
+
+        <div class="free-callout" style="margin-top:38px;">
+          <div>
+            <p class="free-callout__title">The Go version: one file. That is the entire install guide.</p>
+            <p class="free-callout__text">
+              Download the executable for your OS, double-click it, open
+              <code>localhost:8080/chat</code>. No runtime, no package manager, no worshipping a
+              snake. That is why the app is written in Go &mdash; not because it is trendy, but
+              because it is the only version that normal people can actually run.
+            </p>
+          </div>
+          <a class="btn btn--lime" style="background:#14131a;color:#f6ffe6;border-color:#000;" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">
+            Grab the executable
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+
+        <p class="needs__note">
+          <strong>The Python original is still alive and in the repository.</strong> It is not
+          abandoned; it is preserved. Think of it as a museum piece you can still execute, and the
+          reason the Go version exists at all.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         The pit crew
+         ==================================================================== -->
+    <section class="section" id="crew">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Exhibit W-3 &mdash; the pit crew</span>
+          <h2 class="section__title">One human, eight very patient AIs</h2>
+          <p class="section__sub">
+            Nobody asks who built the app. Everybody asks which model built the app. Fine. Here is
+            the roster, with the job each of them actually did. Yes, this page was written with their
+            help too. It is turtles all the way down.
+          </p>
+        </div>
+
+        <div class="cast">
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--lime" aria-hidden="true">GPT</span>
+            <h3 class="cast__name">ChatGPT</h3>
+            <span class="cast__role">The architect</span>
+            <p>
+              Sat through the planning, agreed with almost every idea, and wrote the parts that keep
+              the roof on. Reliable, fast, and constitutionally incapable of saying &ldquo;that is a
+              bad idea&rdquo;.
+            </p>
+          </article>
+
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--pink" aria-hidden="true">GEM</span>
+            <h3 class="cast__name">Google Gemini</h3>
+            <span class="cast__role">The pivot coach &middot; the voice</span>
+            <p>
+              Recommended Go, which is the single most useful sentence in this entire saga. Also the
+              reason the app speaks in a calm English female voice: I asked, she answered, and it
+              became canon. Recasting her now would feel like season-four recasting.
+            </p>
+          </article>
+
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--violet" aria-hidden="true">GRK</span>
+            <h3 class="cast__name">Grok</h3>
+            <span class="cast__role">Head of unfiltered casting</span>
+            <p>
+              For the NSFW roleplay duties it stayed in character better than anything else in the
+              roster. Best in class, allegedly, according to me, at two in the morning, with no
+              witnesses.
+            </p>
+          </article>
+
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--cyan" aria-hidden="true">CLN</span>
+            <h3 class="cast__name">Cline</h3>
+            <span class="cast__role">The night shift (free tier)</span>
+            <p>
+              Wrote most of the marketing site and this page using the free models. Which means this
+              paragraph was written by the thing it is describing. Nobody look directly at it.
+            </p>
+          </article>
+
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--yellow" aria-hidden="true">DSK</span>
+            <h3 class="cast__name">DeepSeek</h3>
+            <span class="cast__role">Paid and free, both shifts</span>
+            <p>
+              The paid model for the hard bugs, the free model for the easy ones and the moral
+              support. Good at code. Excellent at making a subscription feel like a bargain.
+            </p>
+          </article>
+
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--paper" aria-hidden="true">NVD</span>
+            <h3 class="cast__name">NVIDIA free models</h3>
+            <span class="cast__role">The GPU fairy</span>
+            <p>
+              The free allotment did a suspicious amount of work. Mostly the long, tedious
+              conversations that begin with &ldquo;why is this nil pointer&rdquo; and end with me
+              apologising to a compiler.
+            </p>
+          </article>
+
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--pink" aria-hidden="true">OR</span>
+            <h3 class="cast__name">OpenRouter</h3>
+            <span class="cast__role">Barely, but honestly</span>
+            <p>
+              Used for routing around a broken endpoint and for trying whichever model was flavour of
+              the week. Not much. It is in the credits because leaving it out would have been rude.
+            </p>
+          </article>
+
+          <article class="cast__card">
+            <span class="cast__initials cast__initials--lime" aria-hidden="true">OLM</span>
+            <h3 class="cast__name">Ollama</h3>
+            <span class="cast__role">Not the coding &mdash; the economics</span>
+            <p>
+              Not really a co-author. More the reason the app can stay free: local models plus the
+              free API allotment mean replies cost nothing and your chats never leave the machine.
+            </p>
+          </article>
+        </div>
+
+        <p class="needs__note">
+          <strong>The one thing nobody helped with:</strong> the corporate proxy. It remains
+          uncredited and unrepentant. Also worth saying plainly &mdash; Character XI is not
+          affiliated with, endorsed by, or secretly run by any character-chat company. The jokes on
+          the other page are ours.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Fork it
+         ==================================================================== -->
+    <section class="section section--tight" id="fork">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Exhibit W-4 &mdash; the drawer</span>
+          <h2 class="section__title">There are more of these, and you should take one</h2>
+          <p class="section__sub">
+            The GitHub account is a drawer full of chat apps, prototypes and things that seemed like
+            a good idea at the time. Download them, fork them, rename them, ship them. Genuinely.
+          </p>
+        </div>
+
+        <div class="needs needs--fork">
+          <article class="need">
+            <span class="need__badge" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            <h3>The original Python app</h3>
+            <p>
+              The prototype that started this whole mess. It runs, it is in the repository, and it
+              will ask you to install a pile of things. A museum piece you can still execute, kept
+              for historical and sentimental reasons.
+            </p>
+            <p>
+              <a href="https://github.com/mystupidchatapps" target="_blank" rel="noopener noreferrer">Find it in the drawer &rarr;</a>
+            </p>
+          </article>
+
+          <article class="need">
+            <span class="need__badge need__badge--opt" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            <h3>Other chat apps</h3>
+            <p>
+              Several more in there: different front ends, different experiments, at least one
+              cautionary tale. All of them are chat apps, because apparently that is my entire
+              personality now. Try them, break them, tell nobody.
+            </p>
+            <p>
+              <a href="https://github.com/mystupidchatapps" target="_blank" rel="noopener noreferrer">Browse the repositories &rarr;</a>
+            </p>
+          </article>
+
+          <article class="need">
+            <span class="need__badge" aria-hidden="true" style="background:var(--pink);color:#24000f;">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            <h3>Fork it. Genuinely.</h3>
+            <p>
+              Take the code, put your name on the door, make it yours. A fork is a feature request I
+              never have to read and a maintainer I never have to become. No hard feelings, no
+              license drama, no meetings.
+            </p>
+            <p>
+              <a href="https://github.com/mystupidchatapps" target="_blank" rel="noopener noreferrer">Fork it on GitHub &rarr;</a>
+            </p>
+          </article>
+        </div>
+
+        <div class="free-callout" style="margin-top:38px;">
+          <div>
+            <p class="free-callout__title">Take the code. I am asking nicely.</p>
+            <p class="free-callout__text">
+              Download it, fork it, gut it, ship it, put a wizard hat on it. If it breaks, you have
+              the source and eight AIs to ask &mdash; which is more support than most paid apps
+              offer. I would much rather you steal it than send me a change request that begins with
+              &ldquo;just a small tweak&rdquo;.
+            </p>
+          </div>
+          <a class="btn btn--lime" style="background:#14131a;color:#f6ffe6;border-color:#000;" href="https://github.com/mystupidchatapps" target="_blank" rel="noopener noreferrer">
+            Open the GitHub drawer
+            <span aria-hidden="true">&rarr;</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Final CTA
+         ==================================================================== -->
+    <section class="cta" id="download">
+      <div class="container cta__inner">
+        <div>
+          <h2 class="cta__title">Keep the characters. Lose the proxy.</h2>
+          <p class="cta__text">
+            Same app, same $0.00, same single executable. The story is free too &mdash; you just read
+            it, which is more attention than the firewall ever gave me.
+          </p>
+        </div>
+        <div class="cta__actions">
+          <a class="btn btn--dark btn--lg" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download for free
+          </a>
+          <a class="btn btn--paper btn--lg" href="index.html">
+            Back to the landing page
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       Footer
+       ====================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__about">
+          <a href="index.html" class="brand">
+            <span class="brand__mark" aria-hidden="true">XI</span>
+            <span>Character XI</span>
+          </a>
+          <p>
+            A free, self-hosted chat and roleplay server with an unnecessarily dramatic origin story.
+            One executable, one chats folder, no account, no Chapter 11. Formerly known as vividgo2.0,
+            renamed after an unfortunate amount of reading about bankruptcy law.
+          </p>
+        </div>
+
+        <div class="footer__col">
+          <h4>This page</h4>
+          <ul>
+            <li><a href="#saga">The timeline</a></li>
+            <li><a href="#go">Go vs Python</a></li>
+            <li><a href="#crew">The pit crew</a></li>
+            <li><a href="#fork">Fork it</a></li>
+          </ul>
+        </div>
+
+        <div class="footer__col">
+          <h4>The app</h4>
+          <ul>
+            <li><a href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">Download releases</a></li>
+            <li><a href="index.html#start">Setup in 3 steps</a></li>
+            <li><a href="index.html#requirements">What you need</a></li>
+            <li><a href="https://github.com/mystupidchatapps" target="_blank" rel="noopener noreferrer">All the repositories</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <span>&copy; <span id="year">2026</span> Character XI &middot; $0.00/month, forever</span>
+        <button class="easter" id="easter-btn" type="button">
+          <span aria-hidden="true">⚖️</span> File for Chapter 11
+        </button>
+      </div>
+
+      <p class="footer__legal">
+        <b>Legal, briefly.</b> Character XI is an independent open-source project. It is not
+        affiliated with, endorsed by, sponsored by, or secretly run by any character-chat service,
+        model provider or firewall vendor. &ldquo;Chapter 11&rdquo; is a bankruptcy joke about the
+        numerals on the other page, not a report on anybody&rsquo;s finances. The rate plans are
+        satire and cannot be purchased, which is convenient, because the product is free. This
+        origin story is told from memory with the boring parts removed and the embarrassing parts
+        kept &mdash; the blocks were real, the commentary is not legal advice. Your chats never
+        leave your machine except as prompts sent to the model endpoint you configure, and as text
+        sent to the speech service if you turn voice on.
+      </p>
+    </div>
+  </footer>
+
+  <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+
+  <script src="js/charxi.js"></script>
+</body>
+</html>

@@ -1,0 +1,118 @@
+# Character XI — Unhinged Homepage Experiment
+
+## Project
+
+I'm considering renaming my app, VividGo 2.0, to **Character XI**.
+
+XI is the Roman numeral for 11, a joke referencing Chapter 11 bankruptcy. The app is for AI character chats and roleplaying stories, so I want to poke fun at subscription-based chat services and their business models.
+
+The goal is a funny, irreverent, completely original homepage. It should be entertaining enough that someone might share it just for the jokes.
+
+## Project Locations
+
+- Existing project: `C:\dev\vivid2.0`
+- Current homepage: `C:\dev\vivid2.0\vividHomePage`
+- New staging folder: `C:\dev\vivid2.0\charXIhome`
+
+All new work must stay inside the staging folder.
+
+## Your Task
+
+Inspect the existing project to find the correct application download link, understand the browser-based version, and verify the application's actual features.
+
+Then create a new numbered HTML homepage in `C:\dev\vivid2.0\charXIhome`.
+
+Inspect the folder first and choose the next available `index*.html` filename. **Never overwrite an existing index file.** This folder is a staging area for experimental homepage designs.
+
+## Design: Forget the Existing Homepage
+
+The existing homepage is too serious.
+
+Use it only to discover technical information and working links. Do not let its layout, colours, typography, section order, marketing language, or visual identity influence the new design.
+
+I want a completely fresh concept, not a redesign or reskin.
+
+Invent your own layout, colours, graphics, typography, and presentation. Make it look nothing like the existing homepage.
+
+Go for an unhinged internet-marketing vibe: absurd corporate announcements, overdramatic warnings, financial jokes, sci-fi references, and unexpected punchlines.
+
+For example, feel free to work in a joke like:
+
+**"These are not the droids you're looking for."**
+
+Perhaps the droids are looking for your credit card. Perhaps the subscription machine has already sent them. Surprise me.
+
+These are examples, not a checklist. Use your own creative judgement. Do not cram every joke or idea into the page.
+
+## What Character XI Offers
+
+The homepage should communicate the following:
+
+- **Free to use:** The app itself is free, although AI models, hosting, or external services may have their own costs.
+- **Your data, your control:** Chat data can stay on the user's computer, depending on configuration.
+- **Browser and Telegram access:** Users can access the app through a browser or Telegram, depending on the setup.
+- **Less networking drama:** Make fun of people trying to enjoy a chat only to encounter an intimidating "Your connection is not private" browser warning, certificate problems, or networking complications.
+- **Roleplaying and character chats:** This is what the app is actually for.
+
+A possible joke: "Your characters have enough drama. Your Wi-Fi connection doesn't need a subplot."
+
+Keep technical claims accurate. Browser and Telegram access can avoid some common self-hosting hassles, but do not promise to eliminate every certificate warning or guarantee security and privacy in every configuration.
+
+## Satire and Naming
+
+Do not mention Character.AI directly by name anywhere on the page.
+
+Use phrases such as "your chat provider", "the subscription machine", or "that other chat service".
+
+The Chapter 11 reference is part of the Character XI joke. Do not make unverified claims about another company's finances.
+
+The tone should be cheeky, irreverent, and occasionally ridiculous. Avoid making the page so aggressive or overloaded with jokes that the actual product becomes difficult to understand.
+
+## The Fake Subscription Plans
+
+Include a funny section featuring three fictional plans:
+
+- $5/month
+- $10/month
+- $20/month
+
+Clearly identify these as satire, not real paid plans. They must not collect payments.
+
+When a visitor clicks a price, reveal a humorous message suggesting they invest that money for their future instead of spending it on another chat subscription.
+
+Make the messages increasingly dramatic for the more expensive plans. Joke about compound growth, future wealth, and paying monthly to maintain a relationship with a fictional vampire.
+
+Keep the investment humour entertaining, without promising guaranteed returns. Make the interactions work on mobile and desktop; do not rely on hover alone.
+
+## Required Links
+
+The page must include working links to:
+
+1. The existing application download page.
+2. The browser-based application, `browser_static.html`.
+
+Inspect the project to find the correct download URL and understand the browser application's requirements. Do not invent URLs.
+
+You may copy `browser_static.html` and its supporting files into the staging folder if needed. Preserve their contents and required directory structure. Do not modify the originals or break the copied version.
+
+Make both destinations easy to find, even if the button labels are ridiculous.
+
+## Technical Requirements and File Safety
+
+- Use HTML, CSS, and JavaScript as needed.
+- Make the page responsive and usable on desktop and mobile.
+- Ensure links and interactive elements actually work.
+- Maintain readable text, suitable contrast, and keyboard accessibility.
+- Avoid unnecessary dependencies.
+- Do not modify the existing application or homepage.
+- Do not modify the original `browser_static.html` or its supporting files.
+- Never overwrite existing files in the staging folder; use new filenames where necessary.
+- Keep all experimental work inside `C:\dev\vivid2.0\charXIhome`.
+
+## Finish
+
+Test the new page, check its links and pricing interactions, and confirm that the required files are present.
+
+Report the exact filename created, how to open it for testing, which links you used, and any issues you could not verify.
+
+**Most importantly: be creative.** This is a chance to invent a completely new Character XI identity. Do not copy the existing homepage, do not make a generic AI startup landing page, and do not ask me to approve a design before you start. Build something funny, original, and memorable.

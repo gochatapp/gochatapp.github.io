@@ -1,0 +1,21 @@
+i am thinking of renaming my app vividgo2.0 to Character XI 
+this is because character AI a popular chat app has filed for bankruptcy now my code for vividgo and other folders can be found in C:\dev\vivid2.0
+now since XI means 11 a joke for chapter 11
+this is the current home page in C:\dev\vivid2.0\vividHomePage
+
+this is way too serious I want you to do is to create a index.html page that is fun and pokes fun at character AI, you cannotn mention charaacter.ai directly you can say stuff like your chat provider
+but also stresses that ours is free, you have the data on your computer
+maybe we should do something like 
+check out our rate plans
+$5 month (click here for details)
+$10 month (click here for details)
+$20 month (click here for details)
+or hover
+when they click it says take $[n] and put it in a mutual fund instead of wasting your money on chatting apps. You'll thank me in 10 years when you have lots of money. (embellish this a bit)
+
+you also have to have the links to the download page and the browser_static.html
+you can make a copy of browser_static.html and all it's supporting files these are not to change
+
+i want you to write a index[n].html pick the next html file it should be new do not overwrite an existing index*.html file, place in this folder this is a staging ground for test index pages
+new style new format totally unhinged
+write it in this folder C:\dev\vivid2.0\charXIhome> 

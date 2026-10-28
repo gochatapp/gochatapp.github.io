@@ -3,18 +3,921 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to Vivid Chat</title>
-  <style>
-    body { font-family: system-ui, -apple-system, sans-serif; max-width: 650px; margin: 80px auto; padding: 0 20px; line-height: 1.6; color: #1a202c; text-align: center; }
-    h1 { font-size: 2.5rem; margin-bottom: 0.5rem; }
-    p { color: #4a5568; font-size: 1.1rem; }
-    .btn { display: inline-block; background: #4f46e5; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-top: 1rem; }
-    .btn:hover { background: #4338ca; }
-  </style>
+  <title>Character XI — Free AI chat that runs on your computer (no Chapter 11)</title>
+  <meta name="description" content="Character XI is a free, self-hosted AI roleplay & chat server. Your chats live on your hard drive, not on a subscription. Download it, double-click it, and keep the $20.">
+  <meta name="theme-color" content="#0a0a12">
+  <meta property="og:title" content="Character XI — Free AI chat that runs on your computer">
+  <meta property="og:description" content="Chapter XI is not a legal proceeding, it's a roman numeral. Our app is $0.00 forever and your data never leaves your machine.">
+  <meta property="og:type" content="website">
+
+  <!-- Favicon: a lime "XI" on ink -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 64 64%22><rect width=%2264%22 height=%2264%22 rx=%2214%22 fill=%22%23c8ff3d%22/><text x=%2232%22 y=%2246%22 font-family=%22Arial%22 font-size=%2230%22 font-weight=%22900%22 text-anchor=%22middle%22 fill=%22%230a0a12%22>XI</text></svg>">
+
+  <link rel="stylesheet" href="css/charxi.css">
 </head>
 <body>
-  <h1>Welcome to Vivid Chat</h1>
-  <p>The modern chat interface for seamless conversations. Explore our app or view our documentation.</p>
-  <a href="https://github.com/vividchatapp" class="btn">View Organization Repos</a>
+
+  <!-- ======================================================================
+       Ticker: the only honest banner on the internet
+       ====================================================================== -->
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker__track">
+      <!-- One set of headlines. js/charxi.js clones it to fill the screen and
+           drives the seamless loop, so this list lives here only once. -->
+      <span class="ticker__item">📉 Chapter 11 clearance sale</span>
+      <span class="ticker__item">Everything must go — to your own computer</span>
+      <span class="ticker__item">💸 $0.00 / month, forever</span>
+      <span class="ticker__item">No credit card. No trial. No bankruptcy hearing. No ID checks.</span>
+      <span class="ticker__item">🔒 Your chats live on your disk</span>
+      <span class="ticker__item">Download → double-click → localhost:8080/chat</span>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Header
+       ====================================================================== -->
+  <header class="site-header">
+    <div class="container">
+      <nav class="nav" aria-label="Main navigation">
+        <a href="#top" class="brand">
+          <span class="brand__mark" aria-hidden="true">XI</span>
+          <span>Character XI</span>
+          <span class="brand__badge">$0 tier</span>
+        </a>
+
+        <ul class="nav__menu" id="nav-menu">
+          <li><a class="nav__link" href="#pricing">Rate plans</a></li>
+          <li><a class="nav__link" href="#free">Why it's free</a></li>
+          <li><a class="nav__link" href="#requirements">What you need</a></li>
+          <li><a class="nav__link" href="#compare">Compare</a></li>
+          <li><a class="nav__link" href="#faq">FAQ</a></li>
+          <li><a class="nav__link" href="why.html">Why XI</a></li>
+          <li><a class="nav__link nav__link--demo" href="browser_static.html">Chat assets</a></li>
+        </ul>
+
+        <div class="nav__actions">
+          <a class="btn btn--lime btn--sm" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">Download free</a>
+          <button class="nav__toggle" id="nav-toggle" type="button" aria-label="Toggle navigation" aria-controls="nav-menu" aria-expanded="false">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <line x1="3" y1="6" x2="21" y2="6"></line>
+              <line x1="3" y1="12" x2="21" y2="12"></line>
+              <line x1="3" y1="18" x2="21" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- ====================================================================
+         Hero
+         ==================================================================== -->
+    <section class="hero">
+      <div class="container hero__grid">
+        <div>
+          <p class="hero__eyebrow"><b>Chapter 11</b> the app that isn't</p>
+
+          <h1 class="hero__title">
+            Chat with characters.<br>
+            Not with a <em>subscription</em>.
+          </h1>
+
+          <p class="hero__sub">
+            <strong>Character XI</strong> is a free, self-hosted AI roleplay server that runs on your own
+            computer. Your chats live in a file on your hard drive. Your money stays in your
+            bank account. Your characters never need a lawyer.
+          </p>
+
+          <div class="hero__actions">
+            <a class="btn btn--lime btn--lg" id="hero-download" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="7 10 12 15 17 10"></polyline>
+                <line x1="12" y1="15" x2="12" y2="3"></line>
+              </svg>
+              <span>Download for your OS — $0</span>
+            </a>
+            <a class="btn btn--outline btn--lg" href="browser_static.html">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="2" y1="12" x2="22" y2="12"></line>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
+              </svg>
+              <span>See our chat assets</span>
+            </a>
+          </div>
+
+          <div class="hero__chips">
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              No subscription
+            </span>
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Your disk, your data
+            </span>
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              Windows · macOS · Linux · Pi
+            </span>
+            <span class="hero__chip">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              No Node.js, no Docker
+            </span>
+          </div>
+        </div>
+
+        <!-- Receipt stack: their invoice vs our invoice -->
+        <div class="hero__deck">
+          <div class="receipt receipt--them">
+            <div class="stamp">Void</div>
+            <div class="receipt__head">
+              <span>Ch[redacted].AI</span>
+              <span>#11-0</span>
+            </div>
+            <h2 class="receipt__title">Your monthly invoice</h2>
+            <p class="receipt__meta">Auto-renews · billed forever · you will forget to cancel</p>
+            <div class="receipt__rows">
+              <div class="receipt__row"><span>Roleplay access</span><span>$9.99</span></div>
+              <div class="receipt__row"><span>Faster replies</span><span>$9.99</span></div>
+              <div class="receipt__row receipt__row--strike"><span>Uncensored answers</span><span>DENIED</span></div>
+              <div class="receipt__row"><span>Ownership of your own chats</span><span>$0.00 to you</span></div>
+            </div>
+            <div class="receipt__total">
+              <span>Per year</span>
+              <span>$239.76</span>
+            </div>
+            <p class="receipt__foot">Exit interview: “the content filter is the only thing that survived the restructuring.”</p>
+          </div>
+
+          <div class="receipt receipt--us">
+            <div class="stamp stamp--paid">Paid in full</div>
+            <div class="receipt__head">
+              <span>Character XI</span>
+              <span>#000</span>
+            </div>
+            <h2 class="receipt__title">Your monthly invoice</h2>
+            <div class="receipt__rows">
+              <div class="receipt__row"><span>Monthly fee</span><span>$0.00</span></div>
+              <div class="receipt__row"><span>Your chats → your disk</span><span>$0.00</span></div>
+              <div class="receipt__row"><span>Free models (Gemma 4 31B &amp; friends)</span><span>$0.00</span></div>
+            </div>
+            <div class="receipt__total receipt__total--free">
+              <span>Per year</span>
+              <span>$0.00</span>
+            </div>
+            <p class="receipt__foot">Paid by: you.<br>To: you.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Pricing: the joke that pays for itself
+         ==================================================================== -->
+    <section class="section pricing" id="pricing">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Exhibit A — rate plans</span>
+          <h2 class="section__title">Check out our rate plans</h2>
+          <p class="section__sub">
+            Completely unnecessary, fully ceremonial, and copied from every chat app you have ever
+            rage-unsubscribed from. Hover one if you are curious. Click one for the details.
+          </p>
+        </div>
+
+        <p class="pricing__banner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          Notice: none of these plans exist. Character XI is free. This is a bit of fun.
+        </p>
+
+        <div class="plans">
+          <!-- $5 -->
+          <article class="plan" role="button" tabindex="0" aria-haspopup="dialog" data-plan-price="5" data-plan-tier="Snack Tier">
+            <span class="plan__flag" style="color:#7a8f2a;">Entry level</span>
+            <span class="plan__name">Snack Tier</span>
+            <span class="plan__price">$5<small>/ month</small></span>
+            <span class="plan__list">
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> 100 messages a day (a number we invented)</span>
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Gentle censorship, lovingly applied</span>
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Your chats, stored somewhere mysterious</span>
+            </span>
+            <span class="plan__cta">Click here for details <span aria-hidden="true">→</span></span>
+            <span class="plan__tease">psst. click it. i dare you.</span>
+          </article>
+
+          <!-- $10 -->
+          <article class="plan" role="button" tabindex="0" aria-haspopup="dialog" data-plan-price="10" data-plan-tier="Pro Tier">
+            <span class="plan__flag" style="color:#b3245c;">Best value</span>
+            <span class="plan__name">Pro Tier</span>
+            <span class="plan__price">$10<small>/ month</small></span>
+            <span class="plan__list">
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Unlimited-ish messages*</span>
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Your character remembers your name (sometimes)</span>
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Faster typing noises</span>
+            </span>
+            <span class="plan__cta">Click here for details <span aria-hidden="true">→</span></span>
+            <span class="plan__tease">*the asterisk is the product</span>
+          </article>
+
+          <!-- $20 -->
+          <article class="plan" role="button" tabindex="0" aria-haspopup="dialog" data-plan-price="20" data-plan-tier="Ultra Tier">
+            <span class="plan__flag" style="color:#96271b;">Chapter 11 speed</span>
+            <span class="plan__name">Ultra Tier</span>
+            <span class="plan__price">$20<small>/ month</small></span>
+            <span class="plan__list">
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> Everything in Pro, allegedly</span>
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> The content filter, but apologetic</span>
+              <span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5c8f0a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg> A share of the liabilities at no extra cost</span>
+            </span>
+            <span class="plan__cta">Click here for details <span aria-hidden="true">→</span></span>
+            <span class="plan__tease">this is the one that files</span>
+          </article>
+        </div>
+
+        <!-- The only plan we actually sell -->
+        <div class="free-callout">
+          <div>
+            <p class="free-callout__title">There is no fourth plan. There is only $0.00.</p>
+            <p class="free-callout__text">
+              Character XI is a single executable you run yourself. No account, no seat, no tier,
+              no “contact sales”. The only thing that scales is your hard drive.
+            </p>
+          </div>
+          <a class="btn btn--lime" style="background:#14131a;color:#f6ffe6;border-color:#000;" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">
+            Take the $0 tier
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         What you need (the shopping list)
+         ==================================================================== -->
+    <section class="section" id="requirements">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Exhibit B — the shopping list</span>
+          <h2 class="section__title">The $0 plan still has a shopping list</h2>
+          <p class="section__sub">
+            Three things stand between you and a first reply: a computer, an Ollama API key, and —
+            if you want it in your pocket — a Telegram user id plus bot token. All free, pasted
+            once, and none of them renews.
+          </p>
+        </div>
+
+        <div class="needs">
+          <article class="need">
+            <span class="need__badge" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            <h3>A computer</h3>
+            <p>
+              Windows, macOS, Linux, Raspberry Pi or FreeBSD. One executable, no runtime, no
+              installer. If it can open a browser, it can host this.
+            </p>
+            <code>chat-windows-x64.exe</code>
+          </article>
+
+          <article class="need">
+            <span class="need__badge" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            <h3>An Ollama API key</h3>
+            <p>
+              Free from <a href="https://ollama.com/settings/keys" target="_blank" rel="noopener noreferrer">ollama.com/settings/keys</a>.
+              Paste it once in the setup page and pick <strong>Gemma 4 31B</strong> — the model this
+              app already defaults to — so your first reply lands in seconds instead of after a
+              multi-gigabyte download. Running Ollama locally instead? That route needs no key.
+            </p>
+            <code>OLLAMA_API_KEY</code>
+          </article>
+
+          <article class="need">
+            <span class="need__badge need__badge--opt" aria-hidden="true">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+            </span>
+            <h3>Telegram: user id + bot token</h3>
+            <p>
+              Two values, pasted once: <b>@BotFather</b> makes the token, <b>@userinfobot</b> tells
+              you your id. The app wants both or neither. Add them and the same conversation
+              mirrors to your phone; skip them and the browser chat still works.
+            </p>
+            <code>TELEGRAM_USER_ID · TELEGRAM_BOT_TOKEN</code>
+          </article>
+        </div>
+
+        <p class="needs__note">
+          <strong>Fastest route to a first message:</strong> download → paste the Ollama key → pick
+          Gemma 4 31B → open <code>localhost:8080/chat</code>. Telegram can wait; adding it later
+          does not move your chats.
+        </p>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Why it is free
+         ==================================================================== -->
+    <section class="section" id="free">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Why it's free</span>
+          <h2 class="section__title">Because your computer is the server</h2>
+          <p class="section__sub">
+            Character XI has no data center to rent, no content moderators to pay, and no
+            investors to impress. The expensive part — the machine — is already on your desk.
+          </p>
+        </div>
+
+        <div class="feature-grid">
+          <article class="feature">
+            <div class="feature__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="4" width="20" height="12" rx="2"></rect>
+                <line x1="2" y1="10" x2="22" y2="10"></line>
+                <line x1="7" y1="20" x2="17" y2="20"></line>
+              </svg>
+            </div>
+            <h3>Your chats sleep on your disk</h3>
+            <p>
+              Every conversation is written to a local .txt file in the chats folder.
+              <strong>Delete the folder and it is gone forever</strong> — no account to close,
+              no export request, no “download your data” ZIP that arrives in 45 days.
+            </p>
+          </article>
+
+          <article class="feature">
+            <div class="feature__icon feature__icon--pink" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
+              </svg>
+            </div>
+            <h3>$0.00 is the whole price</h3>
+            <p>
+              Not $0 for the first month. Not $0 with a card on file. There is no billing system
+              in the codebase because there is nothing to bill.
+              <strong>The invoice is a joke and the price is not.</strong>
+            </p>
+          </article>
+
+          <article class="feature">
+            <div class="feature__icon feature__icon--cyan" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+            </div>
+            <h3>Free models, no meter</h3>
+            <p>
+              Plug in Gemma 4 31B through a free tier, run something smaller locally with Ollama,
+              or point it at any OpenAI-compatible endpoint. <strong>You pick the brain</strong>,
+              and you can swap it whenever a better one ships.
+            </p>
+          </article>
+
+          <article class="feature">
+            <div class="feature__icon" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16v12H5.17L4 17.17V4z"></path>
+                <line x1="8" y1="9" x2="16" y2="9"></line>
+                <line x1="8" y1="12" x2="13" y2="12"></line>
+              </svg>
+            </div>
+            <h3>Browser or Telegram, your call</h3>
+            <p>
+              The app serves its own chat UI at <code>localhost:8080/chat</code>. Add a Telegram
+              user id and a bot token, and the same conversation mirrors to your phone — same state,
+              same history, <strong>still your machine</strong>.
+            </p>
+          </article>
+
+          <article class="feature">
+            <div class="feature__icon feature__icon--pink" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="4" y="10" width="16" height="10" rx="2"></rect>
+                <path d="M8 10V7a4 4 0 0 1 8 0v3"></path>
+              </svg>
+            </div>
+            <h3>You write the rules</h3>
+            <p>
+              No “your character suddenly got shy and changed the subject”. You own the role
+              description, the role library and the temperature.
+              <strong>Whatever tone you set is the tone you get.</strong>
+            </p>
+          </article>
+
+          <article class="feature">
+            <div class="feature__icon feature__icon--cyan" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                <polyline points="17 8 12 3 7 8"></polyline>
+                <line x1="12" y1="3" x2="12" y2="15"></line>
+              </svg>
+            </div>
+            <h3>Nothing to shut down</h3>
+            <p>
+              If this project vanished tomorrow, your copy keeps working. That is what
+              <strong>software as a file</strong> looks like — no uptime status page, no
+              acquisition announcement, no Chapter 11.
+            </p>
+          </article>
+        </div>
+
+        <div class="dataflow">
+          <div class="dataflow__node dataflow__node--you">
+            <b>1 · You</b>
+            <span>Keyboard, browser, phone</span>
+          </div>
+          <div class="dataflow__arrow" aria-hidden="true">→</div>
+          <div class="dataflow__node">
+            <b>2 · Your computer</b>
+            <span>Executable + chats folder</span>
+          </div>
+          <div class="dataflow__arrow" aria-hidden="true">→</div>
+          <div class="dataflow__node">
+            <b>3 · The model</b>
+            <span>Free endpoint, or fully offline</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Comparison
+         ==================================================================== -->
+    <section class="section section--tight" id="compare">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Exhibit C — the comparison</span>
+          <h2 class="section__title">Subscription vs. a folder on your desktop</h2>
+          <p class="section__sub">
+            We are not going to pretend the market leader is a bad product. It is a very good
+            product with a very creative relationship to your credit card.
+          </p>
+        </div>
+
+        <table class="compare">
+          <thead>
+            <tr>
+              <th scope="col">Question</th>
+              <th scope="col">The subscription apps</th>
+              <th scope="col">Character XI</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td scope="row">Monthly cost</td>
+              <td>$5 to $30, forever, plus tax, plus the tier above the one you bought</td>
+              <td>$0.00, forever, no tier above it<span class="cell-note">There is no upsell. There is nobody to upsell you to.</span></td>
+            </tr>
+            <tr>
+              <td scope="row">Where your chats are stored</td>
+              <td>A server you will never see, in a jurisdiction you will never visit</td>
+              <td>Your hard drive<span class="cell-note">Backups are your problem, and that is the entire point.</span></td>
+            </tr>
+            <tr>
+              <td scope="row">Who can read your roleplay</td>
+              <td>Staff, moderators, contractors, and whoever acquires the company next</td>
+              <td>You. Possibly your cat. Anyone you hand the laptop to.</td>
+            </tr>
+            <tr>
+              <td scope="row">Content rules</td>
+              <td>Written by a policy team, enforced by a filter that apologises</td>
+              <td>Written by you, in the role description, in plain text</td>
+            </tr>
+            <tr>
+              <td scope="row">Message limits</td>
+              <td>Trimmed “for your convenience”</td>
+              <td>Whatever your RAM is willing to discuss</td>
+            </tr>
+            <tr>
+              <td scope="row">Model choice</td>
+              <td>One model, chosen for you</td>
+              <td>Gemma 4 31B, or any OpenAI-compatible endpoint</td>
+            </tr>
+            <tr>
+              <td scope="row">Spoken replies</td>
+              <td>A premium tier away, one voice for everyone, asterisks read aloud</td>
+              <td>
+                <code>.voice char on</code>
+                <span class="cell-note">A narrator voice plus a separate voice per character, cast once per bot. Off by default, needs internet — the one thing here that leaves your machine.</span>
+              </td>
+            </tr>
+            <tr>
+              <td scope="row">If the company files Chapter 11</td>
+              <td>You find out from a push notification and a 400-word blog post</td>
+              <td>Nothing happens. It is a file. It does not have a lawyer.</td>
+            </tr>
+            <tr>
+              <td scope="row">Time to first chat</td>
+              <td>Sign up, verify email, pick a plan, add a card, wait for a queue</td>
+              <td>Download, double-click, open <code>localhost:8080/chat</code></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Quick start
+         ==================================================================== -->
+    <section class="section" id="start">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Setup in three steps</span>
+          <h2 class="section__title">Cheaper than a free trial, faster than canceling one</h2>
+          <p class="section__sub">
+            No Node.js, no Python, no Docker, no <code>git clone</code>, no 40-tab setup guide.
+          </p>
+        </div>
+
+        <div class="steps">
+          <article class="step">
+            <h3>Download the binary for your machine</h3>
+            <p>
+              Windows, Linux, macOS, Raspberry Pi and FreeBSD builds all live on the releases page.
+              There is no installer, because there is nothing to install.
+            </p>
+            <code>chat-windows-x64.exe</code>
+          </article>
+
+          <article class="step">
+            <h3>Double-click it</h3>
+            <p>
+              macOS and Linux get one extra line so the file knows it is allowed to exist.
+              Then the app starts its own local server.
+            </p>
+            <code>chmod +x chat-linux-x64 &amp;&amp; ./chat-linux-x64</code>
+          </article>
+
+          <article class="step">
+            <h3>Open the chat and pick a free model</h3>
+            <p>
+              The browser UI is already served by the app. Paste a free API key or point it at your
+              local Ollama and start the story.
+            </p>
+            <code>http://localhost:8080/chat</code>
+          </article>
+        </div>
+
+        <div class="free-callout" style="margin-top:38px;">
+          <div>
+            <p class="free-callout__title">Want to see the chat assets before you commit?</p>
+            <p class="free-callout__text">
+              Our chat assets page opens the real interface with a static catalogue of roles and
+              stories, so you can poke at it in the next ten seconds without downloading a thing.
+            </p>
+          </div>
+          <a class="btn btn--lime" style="background:#14131a;color:#f6ffe6;border-color:#000;" href="browser_static.html">
+            See our chat assets
+            <span aria-hidden="true">→</span>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         FAQ
+         ==================================================================== -->
+    <section class="section section--tight" id="faq">
+      <div class="container">
+        <div class="section__head">
+          <span class="tag">Frequently filed questions</span>
+          <h2 class="section__title">The FAQ, answered honestly</h2>
+          <p class="section__sub">
+            Six questions. Zero marketing disclaimers. One legal joke, clearly labelled.
+          </p>
+        </div>
+
+        <div class="faq" id="faq-list">
+          <div class="faq__item">
+            <button class="faq__trigger" type="button" aria-expanded="false">
+              <span>So it's actually free? What's the catch?</span>
+              <svg class="faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq__body">
+              <div>
+                <p>
+                  There is no app license fee, no account and no subscription, ever. The only
+                  things that can cost money are choices you make yourself: an optional paid model
+                  API, or your own electricity bill. The app runs on your machine and stores
+                  everything locally, so there is no cloud bill to pass along.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <button class="faq__trigger" type="button" aria-expanded="false">
+              <span>Why is it called Character XI?</span>
+              <svg class="faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq__body">
+              <div>
+                <p>
+                  XI is eleven, as in Chapter 11, as in the joke this whole page is built on. It is
+                  also a roman numeral, which makes it look expensive and classical and completely
+                  free. The app itself is the same self-hosted chat server it always was; only the
+                  accounting humour is new. The full origin story — a work proxy, a library wifi
+                  filter, a VPN that got noticed and eight AIs in a trench coat — is on
+                  <a href="why.html">the why page</a>.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <button class="faq__trigger" type="button" aria-expanded="false">
+              <span>Is this affiliated with Ch[redacted].AI?</span>
+              <svg class="faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq__body">
+              <div>
+                <p>
+                  No. Not affiliated, not endorsed, not connected, not secretly owned by anyone.
+                  Ch[redacted].AI is a trademark of its owner. The jokes are ours, the name is
+                  theirs, and only one of us has lawyers. We are not reporting news about anyone's
+                  finances — if you want facts about a company, read their filings, not a landing
+                  page that talks about mutual funds so you'll get out of your mother's basement and
+                  get a real job.
+                  If it ever closes down and takes your chat history with it, Reddit already has
+                  three rooms for the complaint:
+                  <a href="https://www.reddit.com/r/CharacterAI/" target="_blank" rel="noopener noreferrer">here</a>
+                  for the general outrage,
+                  <a href="https://www.reddit.com/r/CharacterAI_No_Filter/" target="_blank" rel="noopener noreferrer">here</a>
+                  if you would rather skip the filter, and
+                  <a href="https://www.reddit.com/r/CharacterAIRefugees/" target="_blank" rel="noopener noreferrer">here</a>
+                  for the refugees — who have clearly already moved on.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <button class="faq__trigger" type="button" aria-expanded="false">
+              <span>Where does my data actually go?</span>
+              <svg class="faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq__body">
+              <div>
+                <p>
+                  Into local .txt files in the chats folder next to the executable. Conversations and
+                  characters live there; settings sit in a plain-text config folder beside it. All of
+                  it opens in Notepad. Copy the folder to move everything, delete the folder to delete
+                  everything. Nothing is uploaded anywhere, except the prompts you send to whichever
+                  model endpoint you choose — plus, if you switch spoken replies on, the text handed to
+                  the speech service that makes the audio.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <button class="faq__trigger" type="button" aria-expanded="false">
+              <span>Do I need an expensive GPU?</span>
+              <svg class="faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq__body">
+              <div>
+                <p>
+                  No. The default path uses a free model tier over the network, so an ordinary
+                  laptop is enough. If you would rather stay fully offline, smaller local models run
+                  on modest hardware through Ollama or llama.cpp — slower, but entirely yours.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <button class="faq__trigger" type="button" aria-expanded="false">
+              <span>Can I chat from my phone?</span>
+              <svg class="faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq__body">
+              <div>
+                <p>
+                  Yes. On the same Wi-Fi, open the server's LAN address in your phone browser. If you
+                  want it from anywhere, add a Telegram user id and a bot token, and the same
+                  conversation mirrors to Telegram with live state sync — still hosted by your
+                  computer.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="faq__item">
+            <button class="faq__trigger" type="button" aria-expanded="false">
+              <span>Does it read replies out loud?</span>
+              <svg class="faq__icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </button>
+            <div class="faq__body">
+              <div>
+                <p>
+                  Only if you ask it to. <code>.voice on</code> speaks replies; <code>.voice char on</code>
+                  adds the good part — a narrator voice for the prose and a separate voice for every
+                  character, cast once and remembered per bot. <code>.voice list</code> shows the casting,
+                  <code>.voice change 2</code> recasts one, and markdown is stripped before speaking, so
+                  nothing ever reads asterisks aloud. Both switches are off by default, and the audio
+                  comes from Microsoft's Edge TTS service, so it needs internet.
+                </p>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         Final CTA
+         ==================================================================== -->
+    <section class="cta" id="download">
+      <div class="container cta__inner">
+        <div>
+          <h2 class="cta__title">Take the $20. Keep the characters.</h2>
+          <p class="cta__text">
+            Download Character XI, double-click it, and have your first conversation in under a
+            minute. Then open a boring index fund with the money you did not spend. You will thank
+            us in ten years — that is genuinely the whole business model.
+          </p>
+        </div>
+        <div class="cta__actions">
+          <a class="btn btn--dark btn--lg" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Download for free
+          </a>
+          <a class="btn btn--paper btn--lg" href="browser_static.html">
+            See our chat assets
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ======================================================================
+       Footer
+       ====================================================================== -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer__grid">
+        <div class="footer__about">
+          <a href="#top" class="brand">
+            <span class="brand__mark" aria-hidden="true">XI</span>
+            <span>Character XI</span>
+          </a>
+          <p>
+            A free, self-hosted chat and roleplay server. One executable, one chats folder, no
+            account. Formerly known as vividgo2.0, renamed after an unfortunate amount of reading
+            about bankruptcy law.
+          </p>
+        </div>
+
+        <div class="footer__col">
+          <h4>Product</h4>
+          <ul>
+            <li><a href="why.html">Why XI exists</a></li>
+            <li><a href="#pricing">Rate plans</a></li>
+            <li><a href="#requirements">What you need</a></li>
+            <li><a href="#compare">Comparison table</a></li>
+            <li><a href="browser_static.html">Chat assets</a></li>
+          </ul>
+        </div>
+
+        <div class="footer__col">
+          <h4>Get it</h4>
+          <ul>
+            <li><a href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">Download releases</a></li>
+            <li><a href="#start">Setup in 3 steps</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="https://github.com/vividchatapp/vividgo2.0" target="_blank" rel="noopener noreferrer">Source code</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer__bottom">
+        <span>© <span id="year">2026</span> Character XI · $0.00/month, forever</span>
+        <button class="easter" id="easter-btn" type="button">
+          <span aria-hidden="true">⚖️</span> File for Chapter 11
+        </button>
+      </div>
+
+      <p class="footer__legal">
+        <b>Legal, briefly.</b> Character XI is an independent open-source project. It is not
+        affiliated with, endorsed by, sponsored by, or secretly run by Ch[redacted].AI or any other
+        character-chat service. “Chapter 11” refers to the numerals on this page and to a bankruptcy
+        joke; nothing here is a report on any company's financial condition or a legal filing of any
+        kind. The rate plans above are satire and cannot be purchased — which is convenient, because
+        the product is free. Investment figures are illustrative, assume an 8% annual return
+        compounded monthly, ignore taxes and inflation, and are not financial advice. Your chats never
+        leave your machine except as prompts sent to the model endpoint you configure, and as text sent
+        to the speech service if you turn voice on.
+      </p>
+    </div>
+  </footer>
+
+  <!-- ======================================================================
+       Plan "details" modal — where the joke lands
+       ====================================================================== -->
+  <div class="modal" id="plan-modal" hidden>
+    <div class="modal__backdrop" data-modal-close></div>
+
+    <div class="modal__card" role="dialog" aria-modal="true" aria-labelledby="modal-title" aria-describedby="modal-lede">
+      <button class="modal__close" type="button" data-modal-close aria-label="Close this dialog">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true">
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+        </svg>
+      </button>
+
+      <span class="modal__kicker">Rate plan · <span id="modal-tier">Snack Tier</span></span>
+
+      <h2 class="modal__title" id="modal-title">$5 / month, forever</h2>
+
+      <p class="modal__lede" id="modal-lede">
+        Thanks for clicking. Before we take your card, here is the same number expressed as
+        something that <strong>does not get deleted when a company restructures</strong>.
+      </p>
+
+      <div class="modal__math">
+        <div class="modal__math-row">
+          <span>Plan price</span>
+          <b id="modal-price">$5.00 / mo</b>
+        </div>
+        <div class="modal__math-row">
+          <span>
+            10 years of paying it
+            <em class="modal__math-hint" id="modal-ten-hint">$5/mo × 120 months</em>
+          </span>
+          <b id="modal-ten">$600</b>
+        </div>
+        <div class="modal__math-row">
+          <span>
+            20 years of paying it
+            <em class="modal__math-hint" id="modal-twenty-hint">$5/mo × 240 months</em>
+          </span>
+          <b id="modal-twenty">$1,200</b>
+        </div>
+        <div class="modal__math-row">
+          <span>Character XI, same 20 years</span>
+          <b>$0.00</b>
+        </div>
+        <div class="modal__math-row modal__math-row--big">
+          <span>Invested at 8% instead</span>
+          <b id="modal-future">$2,945</b>
+        </div>
+      </div>
+
+      <p class="modal__note">
+        Illustrative only: 8% average annual return, compounded monthly, before taxes and inflation.
+        The multiplications are honest — 10 years is 120 payments, 20 years is 240 — it is the plans
+        that are fictional. Not financial advice; we write chat software. The $0.00, however, is exact.
+      </p>
+
+      <div class="modal__actions">
+        <a class="btn btn--lime" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">
+          Take the $0 plan instead
+        </a>
+        <button class="btn btn--ghost" type="button" data-modal-close>
+          Cancel subscription (there isn't one)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="confetti-layer" id="confetti-layer" aria-hidden="true"></div>
+
+  <script src="js/charxi.js"></script>
 </body>
 </html>
+
