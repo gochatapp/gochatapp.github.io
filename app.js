@@ -7,6 +7,40 @@ let currentPage = 1;
 let installedSet = new Set();
 const staticBrowser = new URLSearchParams(window.location.search).get("static") === "1";
 const storeGistId = "4f4cde4c3ff29da02a89a613e039f900";
+// Current store file name first, then the legacy name the gist was published
+// under before the rename.
+const storeDbFileNames = ["db_chatgo.json", "db_vivid.json"];
+// Previous logins of the same GitHub account, oldest last. The account was
+// renamed from vividchatapp to mystupidchatapps and then to gochatapp; gist raw
+// URLs do not follow a rename (they 404), so they have to be rewritten here.
+const legacyStoreOwners = ["mystupidchatapps", "vividchatapp"];
+const currentStoreOwner = "gochatapp";
+
+// normalizeStoreText rewrites URLs and owner fields left over from a previous
+// GitHub account (whose gists now return 404). Asset file names -- such as the
+// legacy "mystupidchatapps_role_x.txt" published before the names moved on to
+// the GOCHATAPPROLETAG_* tags -- are real GitHub file names and stay untouched.
+function normalizeStoreText(text) {
+  let out = text;
+  for (const owner of legacyStoreOwners) {
+    if (owner === currentStoreOwner) continue;
+    out = out
+      .split("gist.githubusercontent.com/" + owner + "/").join("gist.githubusercontent.com/" + currentStoreOwner + "/")
+      .split("gist.github.com/" + owner + "/").join("gist.github.com/" + currentStoreOwner + "/")
+      .split("api.github.com/users/" + owner).join("api.github.com/users/" + currentStoreOwner)
+      .replace(new RegExp('("owner"\\s*:\\s*")' + owner + '(")', "g"), "$1" + currentStoreOwner + "$2");
+  }
+  return out;
+}
+
+async function parseStoreResponse(res, label) {
+  const text = await res.text();
+  try {
+    return JSON.parse(normalizeStoreText(text));
+  } catch (e) {
+    throw new Error("invalid JSON in " + label);
+  }
+}
 
 const grid = document.getElementById("grid");
 const tpl = document.getElementById("cardTpl");
@@ -19,7 +53,10 @@ const searchInput = document.getElementById("searchInput");
 const sortSel = document.getElementById("sortSel");
 const resultCount = document.getElementById("resultCount");
 let searchQuery = "";
-let sortOrder = "newest";
+// The first <option> in browser.html is the default choice, so the menu and the
+// first render can never disagree about what is selected.
+const DEFAULT_SORT = (sortSel && sortSel.options.length) ? sortSel.options[0].value : "sfw-stars-date";
+let sortOrder = DEFAULT_SORT;
 const menuBtn = document.getElementById("menuBtn");
 const scrim = document.getElementById("scrim");
 
@@ -44,15 +81,16 @@ async function load() {
       const gistResponse = await fetch(`https://api.github.com/gists/${storeGistId}`, { cache: "no-store" });
       if (!gistResponse.ok) throw new Error("HTTP " + gistResponse.status + " loading the store record");
       const gist = await gistResponse.json();
-      const databaseUrl = gist.files?.["db_vivid.json"]?.raw_url;
-      if (!databaseUrl) throw new Error("The store record does not contain db_vivid.json");
+      const dbFileName = storeDbFileNames.find((n) => gist.files?.[n]?.raw_url);
+      if (!dbFileName) throw new Error("The store record does not contain " + storeDbFileNames[0]);
+      const databaseUrl = gist.files[dbFileName].raw_url;
       const storeResponse = await fetch(databaseUrl, { cache: "no-store" });
-      if (!storeResponse.ok) throw new Error("HTTP " + storeResponse.status + " loading db_vivid.json");
-      DATA = await storeResponse.json();
+      if (!storeResponse.ok) throw new Error("HTTP " + storeResponse.status + " loading " + dbFileName);
+      DATA = await parseStoreResponse(storeResponse, dbFileName);
     } else {
       const res = await fetch("/api/store", { cache: "no-store" });
       if (!res.ok) throw new Error("HTTP " + res.status + " loading /api/store");
-      DATA = await res.json();
+      DATA = await parseStoreResponse(res, "/api/store");
     }
   } catch (e) {
     grid.textContent = staticBrowser
@@ -88,8 +126,8 @@ function syncSortOptions() {
   if (!opt) return;
   const isRoles = mode === "roles" && !staticBrowser;
   if (!isRoles && sortOrder === "installed") {
-    sortOrder = "newest";
-    sortSel.value = "newest";
+    sortOrder = DEFAULT_SORT;
+    sortSel.value = DEFAULT_SORT;
   }
   opt.hidden = !isRoles;
   opt.disabled = !isRoles;
@@ -159,6 +197,22 @@ function parseTagsField(t) {
   return [];
 }
 
+// The content rating lives in the tags, not in the thumbnail check. These four
+// tags are the whole rating section of tag_allowed.txt (they are the entries
+// exported with tag_rank 0), so they are the only tags that can answer
+// "is this SFW or NSFW?". Lowercase for comparison against trimmed tags.
+const RATING_TAGS = new Set(["sfw", "nsfw", "mature", "18+"]);
+const NSFW_RATING_TAGS = new Set(["nsfw", "mature", "18+"]);
+
+// isNsfwTagged reports whether the entry carries an adult rating tag. A card
+// tagged both SFW and NSFW counts as NSFW so explicit content can never land in
+// the SFW view, and an untagged card counts as SFW so no card disappears from
+// both views.
+function isNsfwTagged(r) {
+  return parseTagsField(r.tags)
+    .some(t => NSFW_RATING_TAGS.has(String(t).trim().toLowerCase()));
+}
+
 function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
   const el = tpl.content.cloneNode(true);
   const imgEl = el.querySelector("img");
@@ -199,11 +253,10 @@ function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
   // Display order: content rating first, then relationship tags, then the
   // rest in their original (LLM) order. Ranks come from tag_allowed.txt
   // sections, exported as tag_rank; stable sort keeps groups unmixed.
-  const RATING_FALLBACK = new Set(["SFW", "NSFW", "Mature", "18+"]);
   const rankOf = (t) => {
     const r = DATA.tag_rank ? DATA.tag_rank[t] : undefined;
     if (r !== undefined) return r;
-    return RATING_FALLBACK.has(t) ? 0 : 2;
+    return RATING_TAGS.has(String(t).trim().toLowerCase()) ? 0 : 2;
   };
   parseTagsField(tags)
     .map((t, i) => [t, i])
@@ -267,9 +320,17 @@ function itemDate(r) {
   return Date.parse(r.gist_created_at || r.first_seen || r.last_changed || 0) || 0;
 }
 
+// The SFW/NSFW menu entries read the content rating tags (see isNsfwTagged).
+// The thumbnail check (image_sfw) is unrelated to this filter; it only decides
+// whether a card's image is blurred.
 function filteredItems() {
   const byOwner = (r) => activeContrib === "all" || (r.owner || "Unknown") === activeContrib;
   const byInstalled = (r) => sortOrder !== "installed" || installedSet.has(r.gist_id || r.id);
+  const byRating = (r) => {
+    if (sortOrder === "sfw-stars-date") return !isNsfwTagged(r);
+    if (sortOrder === "nsfw-stars-date") return isNsfwTagged(r);
+    return true;
+  };
   const byTags = (r) => { const ts = parseTagsField(r.tags); return activeTags.every(t => ts.includes(t)); };
   const q = searchQuery.toLowerCase().trim();
   const bySearch = (r) => {
@@ -279,13 +340,16 @@ function filteredItems() {
     return q.split(/\s+/).every(w => hay.includes(w));
   };
   const list = (mode === "roles" ? (DATA.roles || []) : (DATA.stories || []))
-    .filter(r => byOwner(r) && byInstalled(r) && byTags(r) && bySearch(r));
+    .filter(r => byOwner(r) && byInstalled(r) && byRating(r) && byTags(r) && bySearch(r));
   const byName = (a, b) => String(a.rolename || a.storyname || a.id || "")
     .localeCompare(String(b.rolename || b.storyname || b.id || ""));
-  if (sortOrder === "oldest") list.sort((a, b) => itemDate(a) - itemDate(b) || byName(a, b));
-  else if (sortOrder === "stars") list.sort((a, b) =>
-    ((Number(b.quality) || 0) - (Number(a.quality) || 0)) || (itemDate(b) - itemDate(a)) || byName(a, b));
-  else list.sort((a, b) => (itemDate(b) - itemDate(a)) || byName(a, b)); // newest
+  const byStars = (a, b) => (Number(b.quality) || 0) - (Number(a.quality) || 0);
+  const byNewestFirst = (a, b) => itemDate(b) - itemDate(a);
+  const byOldestFirst = (a, b) => itemDate(a) - itemDate(b);
+  if (sortOrder === "stars-oldest") list.sort((a, b) => byStars(a, b) || byOldestFirst(a, b) || byName(a, b));
+  // SFW/Stars/Date, NSFW/Stars/Date, Stars/Newest and Installed only all rank the
+  // best rated entries first and break ties with the most recently published.
+  else list.sort((a, b) => byStars(a, b) || byNewestFirst(a, b) || byName(a, b));
   return list;
 }
 
@@ -345,9 +409,12 @@ function render() {
   items.slice(start, start + PAGE_SIZE).forEach(r => {
     grid.appendChild(card(itemToCardArgs(mode, r)));
   });
-  if (!grid.children.length) grid.innerHTML = sortOrder === "installed"
-    ? "<p>No installed roles match the current filters.</p>"
-    : "<p>No results.</p>";
+  if (!grid.children.length) {
+    if (sortOrder === "installed") grid.innerHTML = "<p>No installed roles match the current filters.</p>";
+    else if (sortOrder === "sfw-stars-date" || sortOrder === "nsfw-stars-date") {
+      grid.innerHTML = "<p>No results. Pick another sort option to include every card.</p>";
+    } else grid.innerHTML = "<p>No results.</p>";
+  }
   if (resultCount) resultCount.textContent = `${items.length} result${items.length === 1 ? "" : "s"}`;
   renderPager(document.getElementById("pagerTop"), totalPages);
   renderPager(document.getElementById("pagerBottom"), totalPages);

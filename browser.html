@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>VividChatApp Browser</title>
+<title>Character.XI Browser</title>
 <!-- Tailwind CSS CDN for modern styling -->
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- FontAwesome for icons -->
@@ -318,9 +318,10 @@
         <div class="bbRight flex items-center gap-2">
           <label class="sortLabel text-xs text-slate-400 font-medium whitespace-nowrap" for="sortSel">Sort</label>
           <select id="sortSel" title="Sort order" class="rounded-xl px-3 py-1.5 text-xs">
-            <option value="newest">Newest</option>
-            <option value="oldest">Oldest</option>
-            <option value="stars">Stars</option>
+            <option value="sfw-stars-date">SFW/Stars/Date</option>
+            <option value="nsfw-stars-date">NSFW/Stars/Date</option>
+            <option value="stars-newest">Stars/Newest</option>
+            <option value="stars-oldest">Stars/Oldest</option>
             <option value="installed">Installed only</option>
           </select>
         </div>
@@ -354,6 +355,6 @@
   </template>
 
   <!-- External Script -->
-  <script src="app.js?v=16"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>
