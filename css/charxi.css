@@ -423,6 +423,19 @@ code {
   text-shadow: 3px 3px 0 rgba(0, 0, 0, 0.55);
 }
 
+/* <em> is an inline-block (it has to be, to carry the rotated underline), and a
+   line break is legal on either side of an inline-block — which is how the
+   sentence's full stop ended up stranded on a line of its own. This wrapper
+   refuses to break between the highlighted phrase and its punctuation, while
+   the <em> inside keeps normal wrapping so the phrase still fits a phone. */
+.hero__phrase {
+  white-space: nowrap;
+}
+
+.hero__phrase em {
+  white-space: normal;
+}
+
 .hero__title em::after {
   content: "";
   position: absolute;
