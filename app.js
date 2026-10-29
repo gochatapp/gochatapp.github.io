@@ -347,6 +347,8 @@ function filteredItems() {
   const byNewestFirst = (a, b) => itemDate(b) - itemDate(a);
   const byOldestFirst = (a, b) => itemDate(a) - itemDate(b);
   if (sortOrder === "stars-oldest") list.sort((a, b) => byStars(a, b) || byOldestFirst(a, b) || byName(a, b));
+  else if (sortOrder === "newest") list.sort((a, b) => byNewestFirst(a, b) || byName(a, b));
+  else if (sortOrder === "oldest") list.sort((a, b) => byOldestFirst(a, b) || byName(a, b));
   // SFW/Stars/Date, NSFW/Stars/Date, Stars/Newest and Installed only all rank the
   // best rated entries first and break ties with the most recently published.
   else list.sort((a, b) => byStars(a, b) || byNewestFirst(a, b) || byName(a, b));

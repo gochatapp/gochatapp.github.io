@@ -14,8 +14,14 @@ set "FAILED=0"
 set "PULLED=0"
 set "SAME=0"
 
-if not exist "%SRC%\" echo [ERROR] Source not found: "%SRC%" & goto :fail
-if not exist "%DST%\" echo [ERROR] Destination not found: "%DST%" & goto :fail
+if not exist "%SRC%\" (
+  echo [ERROR] Source not found: "%SRC%"
+  goto :fail
+)
+if not exist "%DST%\" (
+  echo [ERROR] Destination not found: "%DST%"
+  goto :fail
+)
 
 for %%F in (%FILES%) do (
   if not exist "%SRC%\%%F" (
