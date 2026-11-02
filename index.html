@@ -266,7 +266,7 @@
           <span class="tag">Exhibit B — the shopping list</span>
           <h2 class="section__title">The $0 plan still has a shopping list</h2>
           <p class="section__sub">
-            Three things stand between you and a first reply: a computer, an Ollama API key, and —
+            Three things stand between you and a first reply: a computer, an OpenRouter API key, and —
             if you want it in your pocket — a Telegram user id plus bot token. All free, pasted
             once, and none of them renews.
           </p>
@@ -289,14 +289,14 @@
             <span class="need__badge" aria-hidden="true">
               <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </span>
-            <h3>An Ollama API key</h3>
+            <h3>An OpenRouter API key</h3>
             <p>
-              Free from <a href="https://ollama.com/settings/keys" target="_blank" rel="noopener noreferrer">ollama.com/settings/keys</a>.
+              Free from <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">openrouter.ai/keys</a>.
               Paste it once in the setup page and pick <strong>Gemma 4 31B</strong> — the model this
               app already defaults to — so your first reply lands in seconds instead of after a
-              multi-gigabyte download. Running Ollama locally instead? That route needs no key.
+              multi-gigabyte download. Running a local model via Ollama instead? That route needs no key.
             </p>
-            <code>OLLAMA_API_KEY</code>
+            <code>OPENROUTER_API_KEY</code>
           </article>
 
           <article class="need">
@@ -305,16 +305,16 @@
             </span>
             <h3>Telegram: user id + bot token</h3>
             <p>
-              Two values, pasted once: <b>@BotFather</b> makes the token, <b>@userinfobot</b> tells
-              you your id. The app wants both or neither. Add them and the same conversation
-              mirrors to your phone; skip them and the browser chat still works.
+              Two values, pasted once: <b>@BotFather</b> creates your bot token,
+              <b>@userinfobot</b> gives you your user id. Add both to mirror chats to Telegram;
+              leave them blank and the browser chat works fine.
             </p>
             <code>TELEGRAM_USER_ID · TELEGRAM_BOT_TOKEN</code>
           </article>
         </div>
 
         <p class="needs__note">
-          <strong>Fastest route to a first message:</strong> download → paste the Ollama key → pick
+          <strong>Fastest route to a first message:</strong> download → paste the OpenRouter key → pick
           Gemma 4 31B → open <code>localhost:8080/chat</code>. Telegram can wait; adding it later
           does not move your chats.
         </p>
@@ -374,7 +374,7 @@
             </div>
             <h3>Free models, no meter</h3>
             <p>
-              Plug in Gemma 4 31B through a free tier, run something smaller locally with Ollama,
+              Plug in Gemma 4 31B via OpenRouter's free tier, run something smaller locally with Ollama,
               or point it at any OpenAI-compatible endpoint. <strong>You pick the brain</strong>,
               and you can swap it whenever a better one ships.
             </p>
@@ -558,7 +558,7 @@
           <article class="step">
             <h3>Open the chat and pick a free model</h3>
             <p>
-              The browser UI is already served by the app. Paste a free API key or point it at your
+              The browser UI is already served by the app. Paste a free OpenRouter API key or point it at your
               local Ollama and start the story.
             </p>
             <code>http://localhost:8080/chat</code>
