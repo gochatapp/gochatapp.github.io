@@ -126,22 +126,42 @@
     box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.5), 0 0 15px rgba(99, 102, 241, 0.1);
   }
 
+  /* Square thumbnail frame. The art is 1:1, so the frame must be 1:1 too: the
+     old fixed `height: 200px` made the frame a wide rectangle on wide screens
+     and overflow:hidden then clipped the square image inside it. */
   .card .thumbLink {
     width: 100%;
-    height: 200px;
+    aspect-ratio: 1 / 1;
+    height: auto;
     background: #0b1017;
     overflow: hidden;
     display: block;
     position: relative;
   }
-  .card .thumb {
+  /* Deliberately longer than styles.css's `.card img.thumb` (0,2,1): that rule
+     sets max-width:250px + aspect-ratio:1/1 on the image itself, which would
+     leave the frame's 1:1 box partly empty. The frame owns the ratio now. */
+  .card .thumbLink .thumb {
     width: 100%;
     height: 100%;
+    max-width: none;
+    aspect-ratio: auto;
     object-fit: cover;
     transition: transform 0.3s ease;
   }
-  .card:hover .thumb {
+  .card:hover .thumbLink .thumb {
     transform: scale(1.04);
+  }
+  /* app.js swaps a broken/absent thumbnail for this div; keep it filling the
+     square frame instead of falling back to the 250px styles.css box. */
+  .card .thumbLink .noimg {
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    aspect-ratio: auto;
+    margin: 0;
+    border: 0;
+    border-radius: 0;
   }
 
   .card .body {
@@ -217,6 +237,15 @@
   .card .installBtn:hover {
     background: linear-gradient(135deg, #4338ca, #2563eb);
     box-shadow: 0 6px 16px rgba(79, 70, 229, 0.3);
+  }
+  .card .installStatus {
+    align-self: center;
+    color: #86efac;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .card .installStatus.error {
+    color: #fca5a5;
   }
 
   .card .uninstallBtn {
@@ -350,6 +379,7 @@
         <div class="tags"></div>
         <div class="card-actions">
           <button class="installBtn" hidden>Install</button>
+          <span class="installStatus" role="status" aria-live="polite" hidden></span>
           <button class="uninstallBtn" hidden>Uninstall</button>
         </div>
       </div>

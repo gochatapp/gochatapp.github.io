@@ -111,7 +111,7 @@ async function refreshInstalled() {
     const res = await fetch("/api/installed", { cache: "no-store" });
     if (res.ok) {
       const json = await res.json();
-      installedSet = new Set((json.installed || []).map(x => x.gist_id));
+      installedSet = new Set((json.installed || []).map(x => String(x.gist_id || "")).filter(Boolean));
     }
   } catch (_) {
     // ignore – keep existing set
@@ -141,16 +141,16 @@ async function installRole(gistId) {
       body: JSON.stringify({ kind: "role", gist_id: gistId })
     });
     if (res.ok) {
-      installedSet.add(gistId);
+      const result = await res.json();
+      if (!result.ok) throw new Error("The server did not confirm the role installation.");
+      installedSet.add(String(gistId));
       if (sortOrder === "installed") render();
-      return true;
+      return { ok: true };
     }
     const txt = await res.text();
-    alert("Install failed: " + txt);
-    return false;
+    return { ok: false, error: txt || `HTTP ${res.status}` };
   } catch (e) {
-    alert("Install error: " + e);
-    return false;
+    return { ok: false, error: String(e) };
   }
 }
 
@@ -221,6 +221,13 @@ function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
   if (img) {
     imgEl.src = img; imgEl.alt = pretty;
     if (sfw !== "safe") imgEl.classList.add("is-blurred");
+    // Handle private/unavailable images gracefully
+    imgEl.onerror = () => {
+      const d = document.createElement("div");
+      d.className = "noimg";
+      d.textContent = "No image found";
+      imgEl.replaceWith(d);
+    };
   }
   else { const d = document.createElement("div"); d.className = "noimg"; d.textContent = "No thumbnail"; imgEl.replaceWith(d); }
   el.querySelector(".name").textContent = pretty;
@@ -278,19 +285,37 @@ function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
   if (kind === "roles" && !staticBrowser) {
     const installBtn = el.querySelector(".installBtn");
     const uninstallBtn = el.querySelector(".uninstallBtn");
-    const isInstalled = installedSet.has(id);
+    const installStatus = el.querySelector(".installStatus");
+    const installId = String(id || "");
+    const isInstalled = installedSet.has(installId);
     if (isInstalled) {
       installBtn.hidden = true;
       uninstallBtn.hidden = false;
+      installStatus.textContent = "Installed";
+      installStatus.classList.remove("error");
+      installStatus.hidden = false;
     } else {
       installBtn.hidden = false;
       uninstallBtn.hidden = true;
+      installStatus.hidden = true;
     }
     installBtn.onclick = async () => {
-      const ok = await installRole(id);
-      if (ok) {
+      installBtn.disabled = true;
+      installBtn.textContent = "Installing...";
+      installStatus.textContent = "Installing role and image...";
+      installStatus.classList.remove("error");
+      installStatus.hidden = false;
+      const result = await installRole(installId);
+      if (result.ok) {
         installBtn.hidden = true;
         uninstallBtn.hidden = false;
+        installStatus.textContent = "Installed";
+      } else {
+        installBtn.disabled = false;
+        installBtn.textContent = "Install";
+        installStatus.textContent = "Install failed: " + result.error;
+        installStatus.classList.add("error");
+        alert("Install failed: " + result.error);
       }
     };
     uninstallBtn.onclick = async () => {
@@ -303,6 +328,9 @@ function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
       if (ok) {
         uninstallBtn.hidden = true;
         installBtn.hidden = false;
+        installBtn.disabled = false;
+        installBtn.textContent = "Install";
+        installStatus.hidden = true;
       } else {
         uninstallBtn.disabled = false;
       }
@@ -310,6 +338,7 @@ function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
   } else {
     // hide both for non-roles (stories)
     el.querySelector(".installBtn").hidden = true;
+    el.querySelector(".installStatus").hidden = true;
     el.querySelector(".uninstallBtn").hidden = true;
   }
 
@@ -358,7 +387,7 @@ function filteredItems() {
 function itemToCardArgs(kind, r) {
   const sfw = String(r.image_sfw || "").trim().toLowerCase();
   return kind === "roles"
-    ? { kind, id: r.id, title: r.rolename || r.id, img: r.image_url, desc: r.description, tags: r.tags, quality: r.quality, sfw: sfw || "unchecked", url: r.gist_url }
+    ? { kind, id: String(r.gist_id || r.id || ""), title: r.rolename || r.id, img: r.image_url, desc: r.description, tags: r.tags, quality: r.quality, sfw: sfw || "unchecked", url: r.gist_url }
     : { kind, id: r.id, title: r.storyname || r.id, img: r.image_url, desc: r.description, tags: r.tags, sfw: sfw || "unchecked", url: r.gist_url };
 }
 
