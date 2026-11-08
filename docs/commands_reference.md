@@ -1,6 +1,6 @@
-# ChatGo Commands Reference
+# chat Commands Reference
 
-Complete list of all commands available in the ChatGo Telegram bot application.
+Complete list of all commands available in the chat Telegram bot application.
 
 > **Generated:** November 6, 2026  
 > **Source:** `commands.go` (transport-neutral command dispatcher)
@@ -152,8 +152,8 @@ command-line flags.
 | `status` / `s` | — | Show current bot status and settings |
 | `version` | — | Show version information |
 | `release` / `rel` | — | Release/version info |
-| `web` | — | Show the ChatGo website as a tappable link |
-| `web asset` / `web assets` | — | Show the ChatGo asset browser as a tappable link |
+| `web` | — | Show the chat website as a tappable link |
+| `web asset` / `web assets` | — | Show the chat asset browser as a tappable link |
 | `install [gisturl]` | — | Install a role or story from a public GitHub gist. Roles need `GOCHATAPPROLETAG_<name>.txt` plus `thumb.md` |
 
 ---

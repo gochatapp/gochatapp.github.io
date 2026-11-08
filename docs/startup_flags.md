@@ -1,6 +1,6 @@
-# chatgo.exe Startup Flags
+# chat.exe Startup Flags
 
-This document describes the command-line flags available when running `chatgo.exe`.
+This document describes the command-line flags available when running `chat.exe`.
 
 ## Available Flags
 
@@ -16,16 +16,16 @@ This document describes the command-line flags available when running `chatgo.ex
 
 ```bash
 # Run with default settings (web UI on port 8080, accessible on all interfaces)
-chatgo.exe
+chat.exe
 
 # Run web UI on a custom port
-chatgo.exe -port 9090
+chat.exe -port 9090
 
 # Run web UI only on localhost (not accessible from network)
-chatgo.exe -host 127.0.0.1
+chat.exe -host 127.0.0.1
 
 # Check version information
-chatgo.exe -version
+chat.exe -version
 ```
 
 ## Notes

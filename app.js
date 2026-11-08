@@ -9,28 +9,13 @@ const staticBrowser = new URLSearchParams(window.location.search).get("static") 
 const storeGistId = "4f4cde4c3ff29da02a89a613e039f900";
 // Current store file name first, then the legacy name the gist was published
 // under before the rename.
-const storeDbFileNames = ["db_chatgo.json", "db_vivid.json"];
-// Previous logins of the same GitHub account, oldest last. The account was
-// renamed from vividchatapp to mystupidchatapps and then to gochatapp; gist raw
-// URLs do not follow a rename (they 404), so they have to be rewritten here.
-const legacyStoreOwners = ["mystupidchatapps", "vividchatapp"];
+const storeDbFileName = "db_chatgo.json";
 const currentStoreOwner = "gochatapp";
 
-// normalizeStoreText rewrites URLs and owner fields left over from a previous
-// GitHub account (whose gists now return 404). Asset file names -- such as the
-// legacy "mystupidchatapps_role_x.txt" published before the names moved on to
-// the GOCHATAPPROLETAG_* tags -- are real GitHub file names and stay untouched.
+// normalizeStoreText is a no-op kept so the static browser path still parses
+// the store document uniformly; the legacy owner rewrite was removed.
 function normalizeStoreText(text) {
-  let out = text;
-  for (const owner of legacyStoreOwners) {
-    if (owner === currentStoreOwner) continue;
-    out = out
-      .split("gist.githubusercontent.com/" + owner + "/").join("gist.githubusercontent.com/" + currentStoreOwner + "/")
-      .split("gist.github.com/" + owner + "/").join("gist.github.com/" + currentStoreOwner + "/")
-      .split("api.github.com/users/" + owner).join("api.github.com/users/" + currentStoreOwner)
-      .replace(new RegExp('("owner"\\s*:\\s*")' + owner + '(")', "g"), "$1" + currentStoreOwner + "$2");
-  }
-  return out;
+  return text;
 }
 
 async function parseStoreResponse(res, label) {
@@ -86,8 +71,8 @@ async function load() {
       const gistResponse = await fetch(`https://api.github.com/gists/${storeGistId}`, { cache: "no-store" });
       if (!gistResponse.ok) throw new Error("HTTP " + gistResponse.status + " loading the store record");
       const gist = await gistResponse.json();
-      const dbFileName = storeDbFileNames.find((n) => gist.files?.[n]?.raw_url);
-      if (!dbFileName) throw new Error("The store record does not contain " + storeDbFileNames[0]);
+      const dbFileName = gist.files?.[storeDbFileName]?.raw_url ? storeDbFileName : null;
+      if (!dbFileName) throw new Error("The store record does not contain " + storeDbFileName);
       const databaseUrl = gist.files[dbFileName].raw_url;
       const storeResponse = await fetch(databaseUrl, { cache: "no-store" });
       if (!storeResponse.ok) throw new Error("HTTP " + storeResponse.status + " loading " + dbFileName);
