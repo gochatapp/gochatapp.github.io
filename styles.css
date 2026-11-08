@@ -42,8 +42,14 @@ h1 { margin: 0; font-size: 22px; }
 .pageBtn:disabled { opacity: .4; cursor: default; }
 .pageGap { color: #9aa6bd; padding: 0 4px; }
 .pageInfo { color: #9aa6bd; font-size: 12px; margin-left: 8px; }
-#tagOptions { display: flex; flex-direction: column; gap: 3px; margin-top: 4px; max-height: 260px; overflow-y: auto; }
-.tagOpt { text-align: left; padding: 6px 10px; border-radius: 6px; border: none; background: none; color: #e8eaf0; font-size: 13px; line-height: 1.6; cursor: pointer; min-height: 0; white-space: normal; overflow-wrap: anywhere; }
+#tagOptions { display: flex; flex-direction: column; gap: 4px; margin-top: 4px; max-height: 260px; overflow-y: auto; }
+/* flex: 0 0 auto is what keeps this list readable. #tagOptions is a capped-height
+   column flex container, and flex items shrink by default, so 14+ tag rows were
+   squeezed to fit (each button collapsed from ~33px to ~16px). The label then
+   overflowed its own box and the :hover background painted a thin band slicing
+   through the text. The rows must keep their natural height and let the list
+   scroll instead. */
+.tagOpt { flex: 0 0 auto; text-align: left; padding: 6px 10px; border-radius: 6px; border: none; background: none; color: #e8eaf0; font-size: 13px; line-height: 1.6; cursor: pointer; min-height: 0; white-space: normal; overflow-wrap: anywhere; }
 .tagOpt:hover { background: #1a1f27; color: #8fb0ff; }
 .tagOptEmpty { font-size: 12px; color: #9aa6bd; padding: 4px 2px; }
 #tagActive { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
@@ -173,6 +179,9 @@ input, textarea, select { font-size: 16px; }
     transition: transform .22s ease;
   }
   body.nav-open #sidebar { transform: translateX(0); }
+  /* The drawer itself scrolls on phones, so the tag list must not open a second
+     scroll area inside it (nested scrollers are hard to use with a thumb). */
+  #tagOptions { max-height: none; overflow: visible; }
   #grid { padding: 12px; gap: 16px; grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .card { padding: 12px; }
   .name { font-size: 16px; }

@@ -60,6 +60,11 @@ let sortOrder = DEFAULT_SORT;
 const menuBtn = document.getElementById("menuBtn");
 const scrim = document.getElementById("scrim");
 
+function selectNewestSort() {
+  sortOrder = "newest";
+  if (sortSel) sortSel.value = sortOrder;
+}
+
 function setNav(open) {
   document.body.classList.toggle("nav-open", open);
   if (menuBtn) menuBtn.setAttribute("aria-expanded", String(open));
@@ -466,7 +471,7 @@ function renderContribs() {
     const nameBtn = document.createElement("button");
     nameBtn.className = "contribName";
     nameBtn.textContent = owner === "all" ? "All contributors" : owner;
-    nameBtn.onclick = () => { activeContrib = owner; currentPage = 1; renderContribs(); render(); };
+    nameBtn.onclick = () => { activeContrib = owner; selectNewestSort(); currentPage = 1; renderContribs(); render(); };
     wrap.appendChild(nameBtn);
     const sub = document.createElement("div");
     sub.className = "contribLinks";
@@ -489,6 +494,7 @@ function renderContribs() {
 
 function setMode(m) {
   mode = m;
+  selectNewestSort();
   currentPage = 1;
   syncSortOptions();
   tabRoles.classList.toggle("active", m === "roles");
@@ -507,6 +513,7 @@ function allTags() {
 }
 
 function toggleTag(t) {
+  selectNewestSort();
   const i = activeTags.indexOf(t);
   if (i >= 0) activeTags.splice(i, 1);
   else activeTags.push(t);
@@ -545,12 +552,12 @@ function renderTagUI() {
     c.type = "button";
     c.className = "linklike";
     c.textContent = "Clear tags";
-    c.onclick = () => { activeTags = []; currentPage = 1; renderTagUI(); render(); };
+    c.onclick = () => { activeTags = []; selectNewestSort(); currentPage = 1; renderTagUI(); render(); };
     tagActive.appendChild(c);
   }
 }
 
-if (searchInput) searchInput.oninput = () => { searchQuery = searchInput.value || ""; currentPage = 1; render(); };
+if (searchInput) searchInput.oninput = () => { searchQuery = searchInput.value || ""; selectNewestSort(); currentPage = 1; render(); };
 if (sortSel) sortSel.onchange = () => { sortOrder = sortSel.value; currentPage = 1; render(); };
 
 load();

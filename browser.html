@@ -8,7 +8,7 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <!-- FontAwesome for icons -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-<link rel="stylesheet" href="styles.css?v=10" />
+<link rel="stylesheet" href="styles.css?v=11" />
 <style>
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -68,29 +68,11 @@
     display: block;
   }
   
+  /* #tagOptions owns the scrollbar (styles.css: max-height 260px). This wrapper
+     must not scroll too: two nested scrollers produced a second scrollbar and
+     made the list jump under the cursor. */
   #tagListWrap {
-    max-height: 220px;
-    overflow-y: auto;
     padding-right: 4px;
-  }
-
-  #tagOptions .tag-option, #tagActive .tag-active-item {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    padding: 3px 8px;
-    border-radius: 6px;
-    background: #0b1017;
-    border: 1px solid #1e293b;
-    color: #cbd5e1;
-    margin: 2px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  #tagOptions .tag-option:hover {
-    border-color: #6366f1;
-    color: #ffffff;
   }
 
   /* Cards Grid Layout */
@@ -338,7 +320,7 @@
         <div class="bbLeft flex-1 flex items-center gap-3">
           <div class="relative flex-1">
             <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs"></i>
-            <input id="searchInput" type="search" placeholder="Search roles or stories..." autocomplete="off" class="w-full rounded-xl pl-9 pr-3 py-2 text-xs" />
+            <input id="searchInput" type="search" placeholder="Search roles..." autocomplete="off" class="w-full rounded-xl pl-9 pr-3 py-2 text-xs" />
           </div>
           <span id="resultCount" class="text-xs text-slate-400 whitespace-nowrap font-medium"></span>
         </div>
@@ -388,6 +370,6 @@
   </template>
 
   <!-- External Script -->
-  <script src="app.js?v=18"></script>
+  <script src="app.js?v=19"></script>
 </body>
 </html>
