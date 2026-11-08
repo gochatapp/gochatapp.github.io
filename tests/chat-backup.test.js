@@ -14,6 +14,7 @@ async function main() {
   const role = {
     id: "gist_0123456789abcdef0123456789abcdef",
     sourceGist: "0123456789abcdef0123456789abcdef",
+    gistUrl: "https://gist.github.com/0123456789abcdef0123456789abcdef",
     name: "Test role",
   };
   app.ctx.seedChatBackup = role;
@@ -32,15 +33,15 @@ async function main() {
   assert.strictEqual(downloadedBlob.type, "text/plain;charset=utf-8");
   const anchor = app.document.body.children[0];
   assert(anchor.download.endsWith(".txt"), anchor.download);
-  assert(anchor.download.startsWith("chat_0123456789abcdef0123456789abcdef_"), anchor.download);
+  assert(anchor.download.startsWith("chat_https___gist_github_com_0123456789abcdef0123456789abcdef_"), anchor.download);
   assert.strictEqual(await downloadedBlob.text(),
-    "gist_id:[0123456789abcdef0123456789abcdef]\n\n" +
+    "gist_url:[https://gist.github.com/0123456789abcdef0123456789abcdef]\n\n" +
     "user -----------\nhello\n\n" +
     "assistant -----------\nhey how's it going\n");
 
   assert.strictEqual(app.ctx.handleCommand(".clear"), true);
   assert.strictEqual(await downloadedBlob.text(),
-    "gist_id:[0123456789abcdef0123456789abcdef]\n\n" +
+    "gist_url:[https://gist.github.com/0123456789abcdef0123456789abcdef]\n\n" +
     "user -----------\nhello\n\n" +
     "assistant -----------\nhey how's it going\n");
   assert.strictEqual(require("vm").runInContext("currentHistory().length", app.ctx), 0);

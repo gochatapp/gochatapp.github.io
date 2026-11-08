@@ -192,9 +192,9 @@ function chatBackup(){
   const r=currentRole();if(!r){sys("No role selected — nothing to back up.","err");return false;}
   const hist=currentHistory();if(!hist.length){sys("No messages to back up.","err");return false;}
   const d=new Date();const stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+"_"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0")+String(d.getSeconds()).padStart(2,"0");
-  const gistId=r.sourceGist||"";
-  const filename="chat_"+(gistId||"unknown")+"_"+stamp+".txt";
-  const transcript="gist_id:["+gistId+"]\n\n"+hist.map(m=>(m.role==="user"?"user":"assistant")+" -----------\n"+m.content).join("\n\n")+"\n";
+  const gistUrl=r.gistUrl||r.sourceGist||"";
+  const filename="chat_"+(gistUrl||"unknown").replace(/[^a-zA-Z0-9]/g,"_")+"_"+stamp+".txt";
+  const transcript="gist_url:["+gistUrl+"]\n\n"+hist.map(m=>(m.role==="user"?"user":"assistant")+" -----------\n"+m.content).join("\n\n")+"\n";
   downloadBlob(new Blob([transcript],{type:"text/plain;charset=utf-8"}),filename);
   sys("📝 Backup downloaded: "+filename+" ("+hist.length+" messages).");
   return true;
