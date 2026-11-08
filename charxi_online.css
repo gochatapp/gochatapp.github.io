@@ -39,6 +39,9 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 #sidebar{width:290px;min-width:290px;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;z-index:20}
 #sidebar header{padding:14px;border-bottom:1px solid var(--line)}
 #sidebar header h2{font-size:1em}
+#sidebar .findRolesLink{display:block;margin-top:10px;padding:9px 12px;border-radius:10px;background:var(--acc);color:#fff;text-align:center;text-decoration:none;font-weight:700}
+#sidebar .findRolesLink:hover{background:var(--acc2)}
+#sidebar .findRolesLink:focus-visible{outline:2px solid #fff;outline-offset:2px}
 #roleList{flex:1;overflow-y:auto;padding:8px}
 .roleItem{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;padding:9px;border-radius:12px;border:1px solid transparent}
 .roleItem:hover{background:var(--panel2)}.roleItem.active{background:var(--panel2);border-color:var(--acc)}
@@ -67,7 +70,6 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .msg.ai{align-self:flex-start;background:var(--panel2);border:1px solid var(--line);border-bottom-left-radius:4px}
 .msg.sys{align-self:flex-start;background:transparent;border:1px dashed var(--line);color:var(--mut);font-size:.85em;max-width:95%;text-align:left}
 .msg.err{align-self:center;background:rgba(255,92,122,.12);border:1px solid var(--err);color:#ffb3c1;font-size:.88em;max-width:95%}
-.msg .ts{display:block;font-size:.68em;opacity:.65;margin-top:5px;text-align:right}
 .typing{align-self:flex-start;color:var(--mut);font-size:.85em}
 .emptyState{align-self:center;color:var(--mut);text-align:center;margin-top:15dvh;padding:0 20px}
 .emptyState img{width:90px;height:90px;border-radius:50%;object-fit:cover;margin-bottom:12px}

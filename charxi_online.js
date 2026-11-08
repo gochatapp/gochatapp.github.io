@@ -10,7 +10,6 @@ const saveRoles=r=>saveJSON(LS.roles,r);
 const getChats=()=>loadJSON(LS.chats,{});
 const saveChats=c=>saveJSON(LS.chats,c);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const timeStr=t=>new Date(t).toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
 const OR="https://openrouter.ai/api/v1";
 let state={apiKey:"",model:"",roles:[],chats:{},activeRoleId:null,mode:"chat",busy:false,models:[],filtered:[],think:false,length:null};
 const currentRole=()=>state.roles.find(r=>r.id===state.activeRoleId)||null;
@@ -140,10 +139,9 @@ function md2html(md){
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
 /* ================= chat render ================= */
 function scrollBottom(){$("messages").scrollTop=$("messages").scrollHeight;}
-function bubble(role,text,ts,cls){
+function bubble(role,text,cls){
   const d=document.createElement("div");d.className="msg "+(cls||role);
   if(role==="assistant"){d.innerHTML=md2html(text);}else{d.appendChild(document.createTextNode(text));}
-  if(ts!=null){const s=document.createElement("span");s.className="ts";s.textContent=timeStr(ts);d.appendChild(s);}
   return d;
 }
 function renderChat(){
@@ -164,7 +162,7 @@ function renderChat(){
     e.innerHTML=(r.thumbUrl?`<img src="${esc(r.thumbUrl)}" alt="">`:"")+"<br><b>"+esc(r.name)+"</b><br><span class='small'>Say hello to start. In <b>"+state.mode+"</b> mode"+(state.mode==="story"?" only your latest message is sent (no history).":" the full conversation is sent each time.")+"</span>";
     box.appendChild(e);return;
   }
-  hist.forEach(m=>box.appendChild(bubble(m.role,m.content,m.ts)));
+  hist.forEach(m=>box.appendChild(bubble(m.role,m.content)));
   scrollBottom();
 }
 function renderRoles(){
@@ -182,7 +180,7 @@ function renderRoles(){
 }
 function selectRole(id){state.activeRoleId=id;localStorage.setItem(LS.roleId,id);renderRoles();renderChat();}
 function addMsg(role,content){const arr=state.chats[state.activeRoleId]||[];arr.push({role,content,ts:Date.now()});state.chats[state.activeRoleId]=arr;saveChats(state.chats);return arr[arr.length-1];}
-function sys(text,cls){$("messages").appendChild(bubble("sys",text,null,cls||""));scrollBottom();}
+function sys(text,cls){$("messages").appendChild(bubble("sys",text,cls||""));scrollBottom();}
 function setBusy(v){state.busy=v;$("sendBtn").disabled=v;$("sendBtn").textContent=v?"…":"Send ➤";$("input").disabled=v;}
 /* ================= .commands ================= */
 function setMode(m){state.mode=m;localStorage.setItem(LS.mode,m);renderRoles();renderChat();sys("Mode: "+(m==="story"?"📖 Story — only your latest message is sent.":"💬 Chat — full history is sent."));}
@@ -322,8 +320,8 @@ async function sendMessage(){
   const role=currentRole();
   if(!role){sys("Pick a role first (left sidebar), or add one from a Gist URL.");return;}
   if(!state.apiKey||!state.model){sys("No API key/model — reopen Setup (⚙️).","err");return;}
-  const userMsg=addMsg("user",text);
-  $("input").value="";$("messages").appendChild(bubble("user",text,userMsg.ts));scrollBottom();renderRoles();
+  addMsg("user",text);
+  $("input").value="";$("messages").appendChild(bubble("user",text));scrollBottom();renderRoles();
   setBusy(true);
   const hist=currentHistory();
   const context=state.mode==="story"?[hist[hist.length-1]]:hist;
@@ -350,9 +348,9 @@ async function sendMessage(){
       }else throw e;
     }
     const reply=j.choices?.[0]?.message?.content||"(empty reply)";
-    typing.remove();const m=addMsg("assistant",reply);
-    $("messages").appendChild(bubble("assistant",reply,m.ts));scrollBottom();renderRoles();
-  }catch(e){typing.remove();$("messages").appendChild(bubble("sys","❌ "+e.message,null,"err"));scrollBottom();console.error(e);}
+    typing.remove();addMsg("assistant",reply);
+    $("messages").appendChild(bubble("assistant",reply));scrollBottom();renderRoles();
+  }catch(e){typing.remove();$("messages").appendChild(bubble("sys","❌ "+e.message,"err"));scrollBottom();console.error(e);}
   setBusy(false);$("input").focus();
 }
 /* ================= sidebar mobile ================= */

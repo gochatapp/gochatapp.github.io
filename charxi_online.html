@@ -47,10 +47,15 @@
 <section id="chatView" class="hidden">
   <div id="overlay"></div>
   <aside id="sidebar">
-    <header><h2>🧑‍🎭 Roles</h2><p class="small">Tap a role to chat. Chats resume where you left off.</p></header>
+    <header>
+      <h2>🧑‍🎭 Roles</h2>
+      <p class="small">Tap a role to chat. Chats resume where you left off.</p>
+    </header>
     <div id="roleList"></div>
     <div id="addRole">
-      <input type="url" id="newGist" placeholder="Paste a Gist URL to add a role…" autocomplete="off">
+      <a class="findRolesLink" href="browser_static.html" target="_blank" rel="noopener noreferrer">Browse Roles →</a>
+      <p class="small">Browse roles, then copy and paste a role's Gist URL here:</p>
+      <input type="url" id="newGist" placeholder="Paste Role URL to add role" autocomplete="off">
       <button class="btn ghost" id="addRoleBtn" style="width:100%">+ Add role from Gist</button>
       <div id="addRoleMsg"></div>
     </div>
