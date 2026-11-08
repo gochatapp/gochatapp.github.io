@@ -1,0 +1,13 @@
+Testing rules:
+
+- All tests created for this project must be placed in the `tests/` folder at the project root (`c:\dev\vivid2.0\chatweb\tests\`).
+- Never put test files, fixtures, or test scripts in the project root or inside any other folder.
+- Test files should be named clearly (e.g. `<feature>.test.js`) and must be runnable from the `tests/` folder.
+- Temporary / one-off verification scripts also belong in `tests/` — never in the project root, and clean them up when done.
+- The project root should only contain the standalone app (`index.html`), config, and folders (e.g. `tools/`, `tests/`).
+
+API key for testing:
+
+- `tools\openrouter_api_key.txt` holds the OpenRouter API key used ONLY for automated tests (Node scripts in `tests/`). It is not part of the web app.
+- Tests must read the key from that file at runtime (trim whitespace) and must never print, log, commit, or embed the key itself — only masked/hashed checks are allowed.
+- Tests should validate the key via `GET https://openrouter.ai/api/v1/auth/key` before calling chat completions, and use a small/cheap model + `max_tokens` to keep usage minimal.

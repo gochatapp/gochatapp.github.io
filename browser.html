@@ -169,6 +169,52 @@
     justify-content: center;
     gap: 4px;
   }
+  .card .stars-row {
+    display: flex;
+    align-items: center;
+    min-height: 36px;
+  }
+  .card .stars-row .stars {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+  .card .stars-row .copyGistBtn {
+    flex: 0 0 auto;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 8px;
+    margin-left: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.12);
+    border: 1px solid rgba(99, 102, 241, 0.35);
+    color: #c7d2fe;
+    font-size: 13px;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .card .stars-row .copyGistBtn:hover {
+    background: rgba(99, 102, 241, 0.25);
+    color: #ffffff;
+  }
+  .card .stars-row .copyGistBtn:active {
+    background: rgba(99, 102, 241, 0.4);
+  }
+  .card .stars-row .copyGistBtn:focus-visible {
+    outline: 2px solid #818cf8;
+    outline-offset: 2px;
+  }
+  .card .stars-row .copyGistBtn.copied {
+    background: rgba(34, 197, 94, 0.2);
+    border-color: rgba(34, 197, 94, 0.5);
+    color: #86efac;
+  }
 
   .card .desc {
     font-size: 12px;
@@ -357,7 +403,9 @@
       </a>
       <div class="body">
         <h2 class="name"></h2>
-        <div class="stars" hidden></div>
+        <div class="stars-row">
+          <div class="stars" hidden></div>
+        </div>
         <p class="desc"></p>
         <div class="tags"></div>
         <div class="card-actions">

@@ -85,7 +85,7 @@ command-line flags.
 | `role del [n]` | — | Delete a role |
 | `reload` | — | Reload role from disk |
 | `rs [n]` | — | Show current role metadata and a 200-character preview (no LLM call) |
-| `role summary` / `rolesummary` | — | Chat mode only. Ask the LLM for a short summary of the current role. The request sends no conversation history and the reply is not added to chat history. |
+| `role summary` | — | Chat mode only. Ask the LLM for a short summary of the current role. The request sends no conversation history and the reply is not added to chat history. |
 
 > **Note:** A role is held by one bot at a time; switching away frees it for others.
 ---
@@ -121,7 +121,7 @@ command-line flags.
 | `mode [chat\|story]` | `mo` | Toggle history behavior |
 | `recap [n]` | — | Summarize last 50 messages using prompt n |
 | `ask [text]` | — | Ask a question outside of roleplay context (with history access) |
-| `role summary` / `rolesummary` | — | Chat-only LLM role summary; does not use or add to chat history |
+| `role summary` | — | Chat-only LLM role summary; does not use or add to chat history |
 | `del` | — | Delete last message + response |
 | `resend` | — | Resend last user message |
 | `context [n]` | — | Set/show context message limit |
@@ -212,7 +212,7 @@ Most commands work without a configured provider, but these **require** an activ
 - `llmctx` / `ctxsize`
 - `temp`, `top_p`, `repeat_penalty`, `seed`, `num_predict`, `num_gpu`, `num_thread`
 - `ask` (uses LLM)
-- `role summary` / `rolesummary` (uses LLM; chat mode only and history-free)
+- `role summary` (uses LLM; chat mode only and history-free)
 - `recap` (uses LLM)
 
 Commands that work **without** a provider:
@@ -250,11 +250,11 @@ Use this section to mark commands for potential deletion:
 - [ ] **Character Commands** - `char`, `character`, `char edit`, `char save`, `char del`
 - [ ] **Persona Commands** - `persona`, `persona_list`, `persona save`, `persona edit`
 - [ ] **Setting Commands** - `setting`, `settings`, `setting save`, `setting edit`, `setting del`
-- [ ] **Role Commands** - `role`, `r`, `role image`, `role save`, `role del`, `reload`, `rs`, `role summary` / `rolesummary`
+- [ ] **Role Commands** - `role`, `r`, `role image`, `role save`, `role del`, `reload`, `rs`, `role summary`
 - [ ] **Provider/Model Commands** - `provider`, `p`, `model`, `mf`
 - [ ] **Thinking Commands** - `think`, `nothink`, `no think`
 - [ ] **Context/Length** - `llmctx`, `ctxsize`, `ctx`, `length`
-- [ ] **Conversation** - `clear`, `clean`, `mode`, `recap`, `ask`, `role summary` / `rolesummary`, `del`, `resend`, `context`, `history`, `hs`, `backup`, `bak`, `archive`, `ar`
+- [ ] **Conversation** - `clear`, `clean`, `mode`, `recap`, `ask`, `role summary`, `del`, `resend`, `context`, `history`, `hs`, `backup`, `bak`, `archive`, `ar`
 - [ ] **Model Parameters** - `temp`, `temperature`, `top_p`, `topp`, `repeat_penalty`, `rp`, `seed`, `num_predict`, `np`, `num_gpu`, `ng`, `num_thread`, `nt`
 - [ ] **System** - `help`, `h`, `status`, `s`, `version`, `release`, `rel`, `web`, `install`
 

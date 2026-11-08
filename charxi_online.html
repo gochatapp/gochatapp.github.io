@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GoChat — OpenRouter Chat</title>
+<link rel="stylesheet" href="charxi_online.css?v=1">
+</head>
+<body>
+
+<!-- ============ SETUP ============ -->
+<section id="setupView">
+  <div class="card">
+    <h1>⚙️ GoChat Setup</h1>
+    <p class="sub">Add your OpenRouter API key, pick a model, add roles from Gists, then start chatting. Everything is stored only on this device.</p>
+
+    <label for="apiKey">🔑 OpenRouter API Key</label>
+    <div class="keyrow">
+      <input type="password" id="apiKey" placeholder="sk-or-v1-…" autocomplete="off" spellcheck="false">
+      <button class="btn ghost" id="toggleKey" type="button">Show</button>
+    </div>
+    <p class="small">Get one free at <span style="text-decoration:underline">openrouter.ai/keys</span> — it never leaves your browser (requests go straight to OpenRouter).</p>
+
+    <label>🤖 Model — type your key, then load &amp; filter</label>
+    <div class="keyrow">
+      <input type="text" id="modelFilter" placeholder="Filter models… (e.g. deepseek, llama, free)" autocomplete="off">
+      <button class="btn ghost" id="loadModels" type="button">Load Models</button>
+    </div>
+    <div id="modelList"><div class="empty">No models loaded yet.</div></div>
+    <label style="margin-top:10px">✅ Selected model <span class="small">(this is what gets saved &amp; sent to OpenRouter)</span></label>
+    <select id="modelSelect" aria-label="Selected model"><option value="">Select a model…</option></select>
+
+    <label class="check" for="thinkToggle"><input type="checkbox" id="thinkToggle"> 🧠 Thinking (reasoning)</label>
+    <p class="small" style="margin-top:6px">Off by default. When on, supported models reason before replying — slower and uses more tokens.</p>
+
+    <label>🔠 Text size — <span id="fsVal">16px</span></label>
+    <input type="range" id="fontSize" min="13" max="24" step="1" value="16">
+    <div id="fsPreview">Preview: The quick brown fox jumps over the lazy dog. 0123456789</div>
+
+    <p id="setupMsg"></p>
+    <button class="btn" id="saveSetup">💾 Save &amp; Start Chatting</button>
+    <p class="small" style="margin-top:10px;text-align:center">Tip: type <code>.mode story</code> or <code>.mode chat</code> in the chat box to switch modes. No setup saved → you always land here first.</p>
+  </div>
+</section>
+
+<!-- ============ CHAT ============ -->
+<section id="chatView" class="hidden">
+  <div id="overlay"></div>
+  <aside id="sidebar">
+    <header><h2>🧑‍🎭 Roles</h2><p class="small">Tap a role to chat. Chats resume where you left off.</p></header>
+    <div id="roleList"></div>
+    <div id="addRole">
+      <input type="url" id="newGist" placeholder="Paste a Gist URL to add a role…" autocomplete="off">
+      <button class="btn ghost" id="addRoleBtn" style="width:100%">+ Add role from Gist</button>
+      <div id="addRoleMsg"></div>
+    </div>
+  </aside>
+
+  <main id="main">
+    <div id="chatHeader">
+      <button class="iconBtn" id="menuBtn">☰</button>
+      <img id="hdrImg" alt="">
+      <div class="title"><b id="hdrName">No role selected</b><span id="hdrModel"></span></div>
+      <button class="iconBtn" id="modeBtn" title="Toggle chat / story mode">💬 Chat</button>
+      <button class="iconBtn" id="settingsBtn">⚙️</button>
+    </div>
+
+    <div id="messages"></div>
+
+    <div id="composer">
+      <div class="cmdHint">Commands: <code>.think</code> · <code>.length</code> · <code>.clear</code> · <code>.recap</code> · <code>.ask</code> · <code>.del</code> · <code>.backup</code> · <code>.install</code> · <code>.help</code> &nbsp;|&nbsp; Enter = send, Shift+Enter = new line</div>
+      <div id="composerRow">
+        <textarea id="input" rows="1" placeholder="Message… (or .mode story)"></textarea>
+        <button id="sendBtn">Send ➤</button>
+      </div>
+    </div>
+  </main>
+</section>
+<script src="charxi_online.js?v=1"></script>
+
+</body>
+</html>

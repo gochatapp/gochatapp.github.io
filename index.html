@@ -23,6 +23,7 @@
       --accent-strong: #2f8ee8;
       --good: #8bd6b0;
       --bad: #ff7b7b;
+      --warn: #f0b35c;
       --max: 1120px;
     }
     * { box-sizing: border-box; }
@@ -86,6 +87,12 @@
     .step::before { counter-increment: step; content: counter(step); display: grid; place-items: center; width: 32px; height: 32px; margin-bottom: 15px; border-radius: 50%; background: #24486e; color: white; font-weight: 750; }
     .notice { padding: 17px 20px; border-left: 3px solid var(--accent); background: #142338; border-radius: 0 8px 8px 0; color: var(--muted); margin-top: 22px; }
     .notice strong { color: var(--text); }
+    .notice.warn { border-left-color: var(--warn); background: #1d1a10; }
+    .alert-banner { background: #2a230f; border-bottom: 1px solid #5c4a18; color: var(--text); }
+    .alert-banner .container { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 14px 0; flex-wrap: wrap; }
+    .alert-banner p { margin: 0; color: #e8d9b0; font-size: .94rem; max-width: 760px; }
+    .alert-banner strong { color: var(--warn); }
+    .alert-banner .button { white-space: nowrap; }
     
     /* Comparison Table Styling */
     .table-container { overflow-x: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; margin-top: 24px; }
@@ -132,6 +139,7 @@
         <li><a href="#comparison">Why XI?</a></li>
         <li><a href="#getting-started">Getting started</a></li>
         <li><a href="#security">Security</a></li>
+        <li><a href="charxi_online.html">Browser Version</a></li>
         <li><a href="#resources">Persona Vault</a></li>
         <li><a href="#faq">FAQ</a></li>
         <li><a href="docs.html">Documentation</a></li>
@@ -140,6 +148,13 @@
       <a class="button nav-download" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">Download</a>
     </div>
   </header>
+
+  <div class="alert-banner" role="alert">
+    <div class="container">
+      <p><strong>Heads up:</strong> Microsoft has made it much harder to run Character XI directly on your computer right now. Our <strong>browser version</strong> runs in your web browser instead — no install required.</p>
+      <a class="button" href="charxi_online.html">Try the Browser Version <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
 
   <main id="top">
     <section class="hero">
@@ -150,6 +165,7 @@
           <p class="hero-copy"><strong>Character XI</strong> is free software for interactive character conversations and roleplay storytelling. Run the application on your own computer, access it through a web browser or Telegram, and keep your conversation files under your control.</p>
           <div class="hero-actions">
             <a class="button" href="https://github.com/mystupidchatapps/chatgo-releases/releases" target="_blank" rel="noopener noreferrer">Download Character XI <span aria-hidden="true">→</span></a>
+            <a class="button secondary" href="charxi_online.html">Browser Version <span aria-hidden="true">→</span></a>
             <a class="button secondary" href="browser_static.html" target="_blank" rel="noopener noreferrer">Browse Chat Assets</a>
           </div>
           <div class="hero-points">
@@ -161,7 +177,7 @@
         <aside class="summary-card" aria-label="Product summary">
           <h2>At a glance</h2>
           <div class="summary-row"><span>Software cost</span><strong>Free</strong></div>
-          <div class="summary-row"><span>Where it runs</span><strong>Your computer</strong></div>
+          <div class="summary-row"><span>Where it runs</span><strong>Your computer · <a href="charxi_online.html" style="color:inherit">Browser version</a></strong></div>
           <div class="summary-row"><span>Chat access</span><strong>Telegram</strong></div>
           <div class="summary-row"><span>AI connection</span><strong>OpenRouter API</strong></div>
           <div class="summary-row"><span>Conversation files</span><strong>Local storage</strong></div>
@@ -326,6 +342,7 @@
           <div class="section-kicker">Installation</div>
           <h2>Getting started</h2>
           <p>Choose the guide for the device you plan to use. Download links and video tutorials are also available below.</p>
+          <div class="notice warn"><strong>Windows users — please read:</strong> Microsoft has recently made it much harder to run Character XI directly on your computer (you may hit warnings or blocks when you try to run it). Until we have figured out the best fix, use our <strong>browser version</strong> instead — it runs in your web browser with no install. <a href="charxi_online.html">Open the browser version →</a></div>
         </div>
         <div class="grid two">
           <article class="card">
@@ -477,6 +494,14 @@
           <article class="faq-item">
             <h3>Can I run Character XI on a Raspberry Pi?</h3>
             <p>Use the Raspberry Pi quickstart to check supported hardware, operating system requirements, and installation instructions for your device.</p>
+          </article>
+          <article class="faq-item">
+            <h3>Why is Windows / Microsoft making it hard to run Character XI?</h3>
+            <p>Recent Microsoft / Windows security changes have made it much harder to run unsigned or newly released local apps — you may see warnings or blocks when you try to start the download. We are still deciding on the best permanent fix (options include different packaging or signing). In the meantime, use our <a href="charxi_online.html">browser version</a> — it runs in your web browser with no install, and needs only an OpenRouter API key.</p>
+          </article>
+          <article class="faq-item">
+            <h3>What do I need for the browser version?</h3>
+            <p>Just a web browser and a free <a href="https://openrouter.ai/keys" target="_blank" rel="noopener noreferrer">OpenRouter API key</a>. Open the <a href="charxi_online.html">browser version</a>, paste your key, pick a model, and add a role from a Gist URL to start chatting. Your key and chats are stored only in your browser (localStorage) — nothing is installed on your computer.</p>
           </article>
         </div>
       </div>

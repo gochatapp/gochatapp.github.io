@@ -12,6 +12,39 @@ const storeGistId = "4f4cde4c3ff29da02a89a613e039f900";
 const storeDbFileName = "db_chatgo.json";
 const currentStoreOwner = "gochatapp";
 
+// Copy text to the clipboard with a mobile-safe fallback. The async Clipboard
+// API needs a secure context (https:// or http://localhost) and, on iOS
+// Safari, a direct user gesture; fall back to a temporary textarea +
+// execCommand("copy") so in-app webviews / non-secure LAN contexts still
+// work. Returns true when the copy was attempted successfully.
+async function copyToClipboard(text) {
+  if (!text) return false;
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    throw new Error("clipboard API unavailable");
+  } catch (e) {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.top = "0";
+    ta.style.left = "0";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.focus({ preventScroll: true });
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    let ok = false;
+    try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+    ta.remove();
+    if (!ok) throw new Error("copy fallback failed");
+    return true;
+  }
+}
+
 // normalizeStoreText is a no-op kept so the static browser path still parses
 // the store document uniformly; the legacy owner rewrite was removed.
 function normalizeStoreText(text) {
@@ -222,8 +255,9 @@ function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
   else { const d = document.createElement("div"); d.className = "noimg"; d.textContent = "No thumbnail"; imgEl.replaceWith(d); }
   el.querySelector(".name").textContent = pretty;
   const starsEl = el.querySelector(".stars");
+  const starsRow = el.querySelector(".stars-row");
   const q = Number(quality) || 0;
-  if (starsEl) {
+  if (starsEl && starsRow) {
     if (q >= 1 && q <= 5) {
       starsEl.innerHTML = "";
       const full = document.createElement("span");
@@ -242,7 +276,43 @@ function card({ kind, id, title, img, desc, tags, quality, sfw, url }) {
       starsEl.setAttribute("aria-label", `Rated ${q} out of 5`);
       starsEl.hidden = false;
     } else {
-      starsEl.remove();
+      // No rating: hide the stars but keep the row so the static-mode copy
+      // button still has a target when the card has no quality score.
+      starsEl.hidden = true;
+    }
+    // In static mode (GitHub Pages, no detail/install backend) the thumbnail
+    // already links straight to the gist, so sharing the link is the useful
+    // action: copy the gist URL beside the star rating.
+    if (staticBrowser) {
+      const copyBtn = document.createElement("button");
+      copyBtn.type = "button";
+      copyBtn.className = "copyGistBtn";
+      copyBtn.setAttribute("aria-label", "Copy gist URL");
+      copyBtn.title = "Copy gist URL";
+      copyBtn.innerHTML = '<i class="fa-regular fa-copy" aria-hidden="true"></i>';
+      let resetTimer;
+      copyBtn.onclick = async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const ok = await copyToClipboard(url || "");
+        copyBtn.classList.toggle("copied", ok);
+        copyBtn.innerHTML = ok
+          ? '<i class="fa-solid fa-check" aria-hidden="true"></i>'
+          : '<i class="fa-regular fa-copy" aria-hidden="true"></i>';
+        copyBtn.setAttribute("aria-label", ok ? "Copied" : "Copy failed - try again");
+        clearTimeout(resetTimer);
+        resetTimer = setTimeout(() => {
+          copyBtn.classList.remove("copied");
+          copyBtn.innerHTML = '<i class="fa-regular fa-copy" aria-hidden="true"></i>';
+          copyBtn.setAttribute("aria-label", "Copy gist URL");
+        }, 1600);
+      };
+      starsRow.appendChild(copyBtn);
+    } else {
+      // Non-static cards don't need the button (detail page already shows
+      // the gist link), so collapse the row to keep card heights identical
+      // to before.
+      starsRow.remove();
     }
   }
   el.querySelector(".desc").textContent = trunc(desc, 170);
