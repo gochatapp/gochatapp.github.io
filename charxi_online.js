@@ -186,45 +186,30 @@ function setBusy(v){state.busy=v;$("sendBtn").disabled=v;$("sendBtn").textConten
 function setMode(m){state.mode=m;localStorage.setItem(LS.mode,m);renderRoles();renderChat();sys("Mode: "+(m==="story"?"📖 Story — only your latest message is sent.":"💬 Chat — full history is sent."));}
 function setThink(v){state.think=v;localStorage.setItem(LS.think,v?"1":"0");const t=$("thinkToggle");if(t)t.checked=v;sys(v?"🧠 Think ON — model may reason before replying (slower).":"🧠 Think OFF — direct replies (preferred, faster).");}
 function setLength(v){state.length=v;if(v==null){localStorage.removeItem(LS.length);sys("📏 Reply length: auto (no limit).");}else{localStorage.setItem(LS.length,String(v));sys("📏 Reply length: ~"+v+" words.");}}
-/* ---- zip backup (stored, no compression lib needed) ---- */
-const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
-function crc32(bytes){let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=CRC_TABLE[(c^bytes[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
-function zipStored(files){
-  const enc=new TextEncoder();const chunks=[];const central=[];let offset=0;
-  const u16=v=>{const b=new Uint8Array(2);new DataView(b.buffer).setUint16(0,v,true);return b;};
-  const u32=v=>{const b=new Uint8Array(4);new DataView(b.buffer).setUint32(0,v,true);return b;};
-  for(const[name,text]of files){
-    const nb=enc.encode(name),data=enc.encode(text);const crc=crc32(data);
-    chunks.push(new Blob([u32(0x04034b50),u16(20),u16(0),u16(0),u16(0),u16(0),u32(crc),u32(data.length),u32(data.length),u16(nb.length),u16(0),nb,data]));
-    central.push({nb,crc,size:data.length,offset});offset+=30+nb.length+data.length;
-  }
-  const cdStart=offset;
-  for(const c of central){chunks.push(new Blob([u32(0x02014b50),u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),u32(c.crc),u32(c.size),u32(c.size),u16(c.nb.length),u16(0),u16(0),u16(0),u16(0),u32(0),u32(c.offset),c.nb]));offset+=46+c.nb.length;}
-  chunks.push(new Blob([u32(0x06054b50),u16(0),u16(0),u16(central.length),u16(central.length),u32(offset-cdStart),u32(cdStart),u16(0)]));
-  return new Blob(chunks,{type:"application/zip"});
-}
+/* ---- plain-text chat backup ---- */
 function downloadBlob(blob,filename){const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=filename;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);}
 function chatBackup(){
   const r=currentRole();if(!r){sys("No role selected — nothing to back up.","err");return false;}
   const hist=currentHistory();if(!hist.length){sys("No messages to back up.","err");return false;}
   const d=new Date();const stamp=d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")+"_"+String(d.getHours()).padStart(2,"0")+String(d.getMinutes()).padStart(2,"0")+String(d.getSeconds()).padStart(2,"0");
-  const prefix="gist_prefix_"+stamp;
-  const readme="GoChat backup\nRole: "+r.name+"\nModel: "+state.model+"\nMode: "+state.mode+"\nExported: "+d.toLocaleString()+"\nMessages: "+hist.length+"\n\n"+hist.map(m=>"["+new Date(m.ts).toLocaleString()+"] "+(m.role==="user"?"You":r.name)+":\n"+m.content+"\n").join("\n");
-  downloadBlob(zipStored([
-    [prefix+"_chat.txt",readme],
-    [prefix+"_role.txt",r.prompt||""],
-    [prefix+"_meta.json",JSON.stringify({role:r.name,model:state.model,mode:state.mode,exported:d.toISOString(),messages:hist},null,2)],
-  ]),prefix+".zip");
-  sys("📦 Backup downloaded: "+prefix+".zip ("+hist.length+" messages, role prompt + metadata).");
+  const gistId=r.sourceGist||"";
+  const filename="chat_"+(gistId||"unknown")+"_"+stamp+".txt";
+  const transcript="gist_id:["+gistId+"]\n\n"+hist.map(m=>(m.role==="user"?"user":"assistant")+" -----------\n"+m.content).join("\n\n")+"\n";
+  downloadBlob(new Blob([transcript],{type:"text/plain;charset=utf-8"}),filename);
+  sys("📝 Backup downloaded: "+filename+" ("+hist.length+" messages).");
   return true;
 }
-function clearChat(){
+function clearChat(noBackup){
   if(!state.activeRoleId){sys("No chat to clear.");return;}
-  if(!currentHistory().length){sys("Chat is already empty.");return;}
-  if(state.pendingClear){state.pendingClear=false;state.chats[state.activeRoleId]=[];saveChats(state.chats);renderRoles();renderChat();sys("🧹 Memory (context) wiped. Start fresh!");return;}
-  state.pendingClear=true;
-  sys("⚠️ .clear wipes the in-memory chat context. Type .clear again within 10s to confirm (a .zip backup is NOT made automatically — use .backup first if you want one).");
-  setTimeout(()=>{state.pendingClear=false;},10000);
+  const hist=currentHistory();
+  if(!hist.length){sys("Chat is already empty.");return;}
+  if(!noBackup)chatBackup();
+  state.pendingClear=false;
+  state.chats[state.activeRoleId]=[];
+  saveChats(state.chats);
+  renderRoles();
+  renderChat();
+  sys("🧹 Memory (context) wiped. Start fresh!");
 }
 function showStatus(){
   const h=currentHistory();const r=currentRole();
@@ -298,7 +283,7 @@ function handleCommand(raw){
   if(cmd==="mode"){if(["chat","story"].includes(arg.toLowerCase())){setMode(arg.toLowerCase());}else sys("Usage: .mode chat  |  .mode story");return true;}
   if(cmd==="m"){if(["chat","story"].includes(arg.toLowerCase())){setMode(arg.toLowerCase());}else sys("Usage: .m chat  |  .m story");return true;}
   if(cmd==="s"){showStatus();return true;}
-  if(cmd==="h"){sys("Commands:\n.think [on|off|toggle] — toggle thinking (off = preferred, faster)\n.length [n|auto|reset] — set reply length in words (n), or auto/reset removes the limit\n.clear — asks to unzip backup first, then wipes memory\n.recap [n] — summarize last 50 messages using prompt n\n.ask [text] — ask outside roleplay (with history)\n.del — delete last message + response\n.backup — zip as gist_prefix_<date>.zip without clearing\n.install <gist-url> — install role from Gist\n.mode chat|story — switch context mode\n.m chat|story — shortcut for .mode\n.role summary — summarize this person's traits (not added to context)\n.status — show length, memory, context, thinking\n.s — shortcut for .status\n.help — list commands\n.h — shortcut for .help");return true;}
+  if(cmd==="h"){sys("Commands:\n.think [on|off|toggle] — toggle thinking (off = preferred, faster)\n.length [n|auto|reset] — set reply length in words (n), or auto/reset removes the limit\n.clear [noback] — download a .txt backup, then wipe memory; noback skips the download\n.recap [n] — summarize last 50 messages using prompt n\n.ask [text] — ask outside roleplay (with history)\n.del — delete last message + response\n.backup — download this chat as a .txt file without clearing\n.install <gist-url> — install role from Gist\n.mode chat|story — switch context mode\n.m chat|story — shortcut for .mode\n.role summary — summarize this person's traits (not added to context)\n.status — show length, memory, context, thinking\n.s — shortcut for .status\n.help — list commands\n.h — shortcut for .help");return true;}
   if(cmd==="i"){const url=arg.split(/\s+/)[0]||"";if(!url){sys("Usage: .i https://gist.github.com/<user>/<id>");return true;}installGist(url);return true;}
   if(cmd==="think"){const a=arg.toLowerCase();if(a===""||a==="toggle")setThink(!state.think);else if(a==="on")setThink(true);else if(a==="off")setThink(false);else sys("Usage: .think [on|off|toggle] — off = preferred, faster");renderChat();return true;}
   if(cmd==="length"){const a=arg.toLowerCase();if(a==="auto"||a==="reset")setLength(null);else if(a){const n=parseInt(a,10);if(isNaN(n)||n<1)sys("Usage: .length [n|auto|reset] — approximate response length in words");else setLength(n);}else sys("Reply length: "+(state.length==null?"auto (no limit)":"~"+state.length+" words"));renderChat();return true;}
@@ -306,11 +291,11 @@ function handleCommand(raw){
   if(cmd==="backup"){chatBackup();return true;}
   if(cmd==="recap"){recap();return true;}
   if(cmd==="ask"){ask(arg);return true;}
-  if(cmd==="clear"){clearChat();return true;}
+  if(cmd==="clear"){clearChat(arg.toLowerCase()==="noback");return true;}
   if(cmd==="role"){if(!arg||arg.toLowerCase()!=="summary"){sys("Usage: .role summary — summarize this person's traits (not added to context)");return true;}roleSummary();return true;}
   if(cmd==="install"){const url=arg.split(/\s+/)[0]||"";if(!url){sys("Usage: .install https://gist.github.com/<user>/<id>");return true;}installGist(url);return true;}
   if(cmd==="status"){showStatus();return true;}
-  if(cmd==="help"){sys("Commands:\n.think [on|off|toggle] — toggle thinking (off = preferred, faster)\n.length [n|auto|reset] — set reply length in words (n), or auto/reset removes the limit\n.clear — asks to unzip backup first, then wipes memory\n.recap [n] — summarize last 50 messages using prompt n\n.ask [text] — ask outside roleplay (with history)\n.del — delete last message + response\n.backup — zip as gist_prefix_<date>.zip without clearing\n.install <gist-url> — install role from Gist\n.mode chat|story — switch context mode\n.role summary — summarize this person's traits (not added to context)\n.status — show length, memory, context, thinking\n.help — list commands");return true;}
+  if(cmd==="help"){sys("Commands:\n.think [on|off|toggle] — toggle thinking (off = preferred, faster)\n.length [n|auto|reset] — set reply length in words (n), or auto/reset removes the limit\n.clear [noback] — download a .txt backup, then wipe memory; noback skips the download\n.recap [n] — summarize last 50 messages using prompt n\n.ask [text] — ask outside roleplay (with history)\n.del — delete last message + response\n.backup — download this chat as a .txt file without clearing\n.install <gist-url> — install role from Gist\n.mode chat|story — switch context mode\n.role summary — summarize this person's traits (not added to context)\n.status — show length, memory, context, thinking\n.help — list commands");return true;}
   sys("Unknown command: ."+cmd+" — type .help");return true;
 }
 /* ================= send to LLM ================= */
