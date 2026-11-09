@@ -33,6 +33,9 @@
     <label class="check" for="thinkToggle"><input type="checkbox" id="thinkToggle"> 🧠 Thinking (reasoning)</label>
     <p class="small" style="margin-top:6px">Off by default. When on, supported models reason before replying — slower and uses more tokens.</p>
 
+    <label class="check" for="voiceToggle"><input type="checkbox" id="voiceToggle"> 🔊 Voice (Edge TTS — SoniaNeural)</label>
+    <p class="small" style="margin-top:6px">Off by default. When on, each AI reply gets an MP3 player below it. You tap play — it never auto-plays.</p>
+
     <label>🔠 Text size — <span id="fsVal">16px</span></label>
     <input type="range" id="fontSize" min="13" max="24" step="1" value="16">
     <div id="fsPreview">Preview: The quick brown fox jumps over the lazy dog. 0123456789</div>
@@ -73,7 +76,7 @@
     <div id="messages"></div>
 
     <div id="composer">
-      <div class="cmdHint">Commands: <code>.think</code> · <code>.length</code> · <code>.clear</code> (or <code>.clear noback</code>) · <code>.recap</code> · <code>.ask</code> · <code>.del</code> · <code>.backup</code> · <code>.install</code> · <code>.help</code> &nbsp;|&nbsp; Enter = send, Shift+Enter = new line</div>
+      <div class="cmdHint">Commands: <code>.think</code> · <code>.length</code> · <code>.clear</code> (or <code>.clear noback</code>) · <code>.recap</code> · <code>.ask</code> · <code>.del</code> · <code>.backup</code> · <code>.voice</code> · <code>.help</code> &nbsp;|&nbsp; Enter = send, Shift+Enter = new line</div>
       <div id="composerRow">
         <textarea id="input" rows="1" placeholder="Message… (or .mode story)"></textarea>
         <button id="sendBtn">Send ➤</button>
@@ -81,7 +84,7 @@
     </div>
   </main>
 </section>
-<script src="charxi_online.js?v=1"></script>
+<script src="charxi_online.js?v=2"></script>
 
 </body>
 </html>

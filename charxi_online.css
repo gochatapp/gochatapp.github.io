@@ -86,6 +86,8 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .msg.ai hr{border:none;border-top:1px solid var(--line);margin:1em 0}
 .msg.ai a{color:var(--acc2);text-decoration:underline}
 .msg.ai a:hover{color:var(--acc)}
+.msg.ai audio{width:100%;margin-top:8px;display:block}
+.msg.ai .voice-generating{color:var(--mut);font-size:.85em;margin-top:8px}
 #composer{border-top:1px solid var(--line);padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:var(--panel)}
 .cmdHint{font-size:.75em;color:var(--mut);margin-bottom:7px}
 .cmdHint code{background:var(--panel2);padding:1px 6px;border-radius:6px;border:1px solid var(--line)}

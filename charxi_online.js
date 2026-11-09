@@ -1,7 +1,7 @@
 /* charxi_online.js - page logic for charxi_online.html (split out of the inline <script> block). */
 "use strict";
 /* ================= storage ================= */
-const LS={apiKey:"gochat_apiKey",model:"gochat_model",fs:"gochat_fontSize",roles:"gochat_roles",chats:"gochat_chats",roleId:"gochat_activeRoleId",mode:"gochat_mode",think:"gochat_think",length:"gochat_length"};
+const LS={apiKey:"gochat_apiKey",model:"gochat_model",fs:"gochat_fontSize",roles:"gochat_roles",chats:"gochat_chats",roleId:"gochat_activeRoleId",mode:"gochat_mode",think:"gochat_think",length:"gochat_length",voice:"gochat_voice"};
 const $=id=>document.getElementById(id);
 const loadJSON=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
 const saveJSON=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){console.warn("save failed (quota?)",e)}};
@@ -11,14 +11,14 @@ const getChats=()=>loadJSON(LS.chats,{});
 const saveChats=c=>saveJSON(LS.chats,c);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const OR="https://openrouter.ai/api/v1";
-let state={apiKey:"",model:"",roles:[],chats:{},activeRoleId:null,mode:"chat",busy:false,models:[],filtered:[],think:false,length:null};
+let state={apiKey:"",model:"",roles:[],chats:{},activeRoleId:null,mode:"chat",busy:false,models:[],filtered:[],think:false,length:null,voice:false};
 const currentRole=()=>state.roles.find(r=>r.id===state.activeRoleId)||null;
 const currentHistory=()=>state.activeRoleId?(state.chats[state.activeRoleId]||[]):[];
 function applyFontSize(px){document.documentElement.style.setProperty("--fs",px+"px");localStorage.setItem(LS.fs,String(px));$("fsVal").textContent=px+"px";$("fontSize").value=px;}
 /* ================= views ================= */
 function showSetup(){$("setupView").classList.remove("hidden");$("chatView").classList.add("hidden");}
 function showChat(){$("setupView").classList.add("hidden");$("chatView").classList.remove("hidden");}
-function primeSetup(){$("apiKey").value=state.apiKey||"";$("modelSelect").value=state.model||"";$("thinkToggle").checked=!!state.think;applyFontSize(parseInt(localStorage.getItem(LS.fs)||"16",10)||16);}
+function primeSetup(){$("apiKey").value=state.apiKey||"";$("modelSelect").value=state.model||"";$("thinkToggle").checked=!!state.think;$("voiceToggle").checked=!!state.voice;applyFontSize(parseInt(localStorage.getItem(LS.fs)||"16",10)||16);}
 /* ================= models (setup) ================= */
 function setSetupMsg(t,cls){const m=$("setupMsg");m.textContent=t;m.className=cls||"";}
 async function loadModels(){
@@ -96,6 +96,9 @@ function boot(){  state.apiKey=localStorage.getItem(LS.apiKey)||"";
   if(localStorage.getItem(LS.think)===null)localStorage.setItem(LS.think,"0"); // thinking is OFF by default
   state.think=localStorage.getItem(LS.think)==="1";
   {const t=$("thinkToggle");if(t)t.checked=state.think;}
+  if(localStorage.getItem(LS.voice)===null)localStorage.setItem(LS.voice,"0"); // voice is OFF by default
+  state.voice=localStorage.getItem(LS.voice)==="1";
+  {const v=$("voiceToggle");if(v)v.checked=state.voice;}
   state.length=localStorage.getItem(LS.length)?parseInt(localStorage.getItem(LS.length),10):null;
   applyFontSize(parseInt(localStorage.getItem(LS.fs)||"16",10)||16);
   if(!state.apiKey||!state.model){primeSetup();showSetup();if(!state.roles.length)$("setupMsg").textContent="First run — add your key above to get started.";return;}
@@ -286,6 +289,7 @@ function handleCommand(raw){
   if(cmd==="h"){sys("Commands:\n.think [on|off|toggle] — toggle thinking (off = preferred, faster)\n.length [n|auto|reset] — set reply length in words (n), or auto/reset removes the limit\n.clear [noback] — download a .txt backup, then wipe memory; noback skips the download\n.recap [n] — summarize last 50 messages using prompt n\n.ask [text] — ask outside roleplay (with history)\n.del — delete last message + response\n.backup — download this chat as a .txt file without clearing\n.install <gist-url> — install role from Gist\n.mode chat|story — switch context mode\n.m chat|story — shortcut for .mode\n.role summary — summarize this person's traits (not added to context)\n.status — show length, memory, context, thinking\n.s — shortcut for .status\n.help — list commands\n.h — shortcut for .help");return true;}
   if(cmd==="i"){const url=arg.split(/\s+/)[0]||"";if(!url){sys("Usage: .i https://gist.github.com/<user>/<id>");return true;}installGist(url);return true;}
   if(cmd==="think"){const a=arg.toLowerCase();if(a===""||a==="toggle")setThink(!state.think);else if(a==="on")setThink(true);else if(a==="off")setThink(false);else sys("Usage: .think [on|off|toggle] — off = preferred, faster");renderChat();return true;}
+  if(cmd==="voice"){const a=arg.toLowerCase();if(a===""||a==="toggle"){state.voice=!state.voice;localStorage.setItem(LS.voice,state.voice?"1":"0");}else if(a==="on"){state.voice=true;localStorage.setItem(LS.voice,"1");}else if(a==="off"){state.voice=false;localStorage.setItem(LS.voice,"0");}else{sys("Usage: .voice [on|off|toggle] — toggle Edge TTS voice (SoniaNeural)");return true;}$("voiceToggle").checked=state.voice;sys(state.voice?"🔊 Voice ON — each AI reply gets a play button (SoniaNeural).":"🔇 Voice OFF — text only.");return true;}
   if(cmd==="length"){const a=arg.toLowerCase();if(a==="auto"||a==="reset")setLength(null);else if(a){const n=parseInt(a,10);if(isNaN(n)||n<1)sys("Usage: .length [n|auto|reset] — approximate response length in words");else setLength(n);}else sys("Reply length: "+(state.length==null?"auto (no limit)":"~"+state.length+" words"));renderChat();return true;}
   if(cmd==="del"){delLast();return true;}
   if(cmd==="backup"){chatBackup();return true;}
@@ -334,10 +338,182 @@ async function sendMessage(){
     }
     const reply=j.choices?.[0]?.message?.content||"(empty reply)";
     typing.remove();addMsg("assistant",reply);
-    $("messages").appendChild(bubble("assistant",reply));scrollBottom();renderRoles();
+    const aiBubble = bubble("assistant",reply);
+    $("messages").appendChild(aiBubble);scrollBottom();renderRoles();
+    attachVoicePlayer(aiBubble, reply);
   }catch(e){typing.remove();$("messages").appendChild(bubble("sys","❌ "+e.message,"err"));scrollBottom();console.error(e);}
   setBusy(false);$("input").focus();
 }
+/* ================= TTS (Edge TTS — SoniaNeural) ================= */
+// Strip markdown formatting (ported from Go test_tts/main.go)
+function stripMarkdown(text){
+  text = text.replace(/(\*\*|__)(.*?)(\*\*|__)/g, '$2');
+  text = text.replace(/(\*|_)(.*?)(\*|_)/g, '$2');
+  text = text.replace(/`([^`]*)`/g, '$1');
+  text = text.replace(/```[^`]*```/g, '');
+  text = text.replace(/^\s{0,3}#{1,6}\s+/gm, '');
+  text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
+  text = text.replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1');
+  text = text.replace(/^\s{0,3}>\s?/gm, '');
+  text = text.replace(/^\s{0,3}((-\{3,})|(\*{3,})|(_{3,}))\s*$/gm, '');
+  text = text.replace(/^\s{0,3}([-*+]|\d+\.)\s+/gm, '');
+  text = text.replace(/~~(.*?)~~/g, '$1');
+  text = text.replace(/\*\*/g, '').replace(/__/g, '').replace(/\*/g, '').replace(/_/g, '').replace(/`/g, '').replace(/~~/g, '');
+  text = text.replace(/\s+/g, ' ');
+  return text.trim();
+}
+
+// Split text into chunks at word boundaries (ported from Go test_tts/tts_compare_test.go)
+function splitTextForTTS(text, maxCharacters){
+  const words = text.split(/\s+/);
+  const chunks = [];
+  let current = '';
+  for(const word of words){
+    const candidate = current ? current + ' ' + word : word;
+    if(current && candidate.length > maxCharacters){
+      chunks.push(current);
+      current = word;
+    }else{
+      current = candidate;
+    }
+  }
+  if(current) chunks.push(current);
+  return chunks;
+}
+
+/* ================= sidebar mobile ================= */// Edge TTS WebSocket client — generates MP3 via Microsoft's Read-Aloud service
+// Voice: en-GB-SoniaNeural (female, British)
+// Returns a Promise resolving to an audio Blob (audio/mpeg)
+async function fetchEdgeTtsMp3(text){
+  const voice = 'en-GB-SoniaNeural';
+  const maxCharsTotal = 3000;
+  const maxCharsChunk = 1000;
+
+  const clean = stripMarkdown(text).slice(0, maxCharsTotal);
+  if(!clean) return null;
+
+  const chunks = splitTextForTTS(clean, maxCharsChunk);
+  const audioParts = [];
+
+  for(const chunk of chunks){
+    const escaped = chunk
+      .replace(/&/g, '&')
+      .replace(/</g, '<')
+      .replace(/>/g, '>')
+      .replace(/"/g, '"')
+      .replace(/'/g, '&apos;');
+    const ssml = `<speak version="1.0" xmlns="http://www.w3.org/2001/10/synthesis" xml:lang="en-GB"><voice name="${voice}">${escaped}</voice></speak>`;
+
+    const now = Date.now();
+    const filetime = BigInt((now + 11644473600000) * 10000);
+    const rounded = (filetime / 3000000000n) * 3000000000n;
+    const guid = crypto.randomUUID().replace(/-/g, '');
+    const tokenInput = rounded.toString() + guid;
+    const hashBuf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(tokenInput));
+    const token = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
+
+    const wsUrl = `wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1?TrustedClientToken=${token}&Sec-MS-GSL=${token}`;
+    console.log('[TTS] Connecting to:', wsUrl);
+    const ws = new WebSocket(wsUrl);
+    ws.binaryType = 'arraybuffer';
+
+    const chunkAudio = await new Promise((resolve, reject) => {
+      let receivedAudio = new Uint8Array(0);
+      ws.onopen = () => {
+        console.log('[TTS] WebSocket open, sending config and request');
+        const config = JSON.stringify({context:{synthesis:{audio:{metadataOptions:{sentenceBoundaryEnabled:false,wordBoundaryEnabled:false},outputFormat:'audio-24khz-48kbitrate-mono-mp3'}}}});
+        ws.send(config);
+        const request = JSON.stringify({input:{text:ssml,voice:{name:voice}},voice:{name:voice}});
+        ws.send(request);
+      };
+      ws.onmessage = (event) => {
+        if (typeof event.data === 'string') {
+          console.log('[TTS] WS text message:', event.data.slice(0, 200));
+        }
+        if(event.data instanceof ArrayBuffer){
+          const frame = new Uint8Array(event.data);
+          const combined = new Uint8Array(receivedAudio.length + frame.length);
+          combined.set(receivedAudio);
+          combined.set(frame, receivedAudio.length);
+          receivedAudio = combined;
+        }else if(typeof event.data === 'string'){
+          try{
+            const msg = JSON.parse(event.data);
+            if(msg.type === 'turn.end'){
+              ws.close();
+              resolve(receivedAudio);
+            }
+          }catch(e){}
+        }
+      };
+      ws.onerror = (err) => {
+        console.error('[TTS] WebSocket error:', err);
+        reject(new Error('WebSocket error: ' + err.message));
+      };
+      ws.onclose = (e) => {
+        console.log('[TTS] WebSocket closed, code:', e.code, 'reason:', e.reason, 'wasClean:', e.wasClean);
+        if(receivedAudio.length > 0) resolve(receivedAudio);
+        else reject(new Error('WebSocket closed without audio'));
+      };
+      setTimeout(() => { ws.close(); reject(new Error('TTS timeout')); }, 15000);
+    });
+
+    audioParts.push(chunkAudio);
+  }
+
+  const totalLength = audioParts.reduce((sum, part) => sum + part.length, 0);
+  const combined = new Uint8Array(totalLength);
+  let offset = 0;
+  for(const part of audioParts){
+    combined.set(part, offset);
+    offset += part.length;
+  }
+  return new Blob([combined], {type: 'audio/mpeg'});
+}
+
+/* ================= sidebar mobile ================= */// Attach a voice player to an assistant message bubble
+// Called only for NEW messages when voice is enabled (not on history re-render)
+async function attachVoicePlayer(bubbleEl, replyText){
+  if(!state.voice) return;
+  if(!bubbleEl || bubbleEl.classList.contains('voice-attached')) return;
+
+  bubbleEl.classList.add('voice-attached');
+
+  const placeholder = document.createElement('div');
+  placeholder.className = 'voice-generating';
+  placeholder.textContent = '🔊 Generating voice…';
+  bubbleEl.appendChild(placeholder);
+
+  try{
+    const blob = await fetchEdgeTtsMp3(replyText);
+    placeholder.remove();
+    if(!blob || blob.size === 0){
+      const err = document.createElement('div');
+      err.className = 'voice-generating';
+      err.textContent = '🔊 Voice unavailable (empty response)';
+      bubbleEl.appendChild(err);
+      return;
+    }
+    const url = URL.createObjectURL(blob);
+    const audio = document.createElement('audio');
+    audio.controls = true;
+    audio.preload = 'none';
+    audio.src = url;
+    bubbleEl.appendChild(audio);
+  } catch (e) {
+    placeholder.remove();
+    const err = document.createElement('div');
+    err.className = 'voice-generating';
+    // Show actual error message for debugging
+    const msg = e?.message || String(e);
+    err.textContent = '🔊 Voice error: ' + msg.slice(0, 120);
+    err.title = msg; // full error on hover
+    bubbleEl.appendChild(err);
+    console.error('TTS failed:', e);
+  }
+}
+
+/* ================= sidebar mobile ================= */
 /* ================= sidebar mobile ================= */
 function openSidebar(){$("sidebar").classList.add("open");$("overlay").classList.add("show");}
 function closeSidebar(){$("sidebar").classList.remove("open");$("overlay").classList.remove("show");}
@@ -361,6 +537,7 @@ $("saveSetup").onclick=saveSetup;
 $("modelFilter").oninput=applyFilter;
 $("modelSelect").onchange=e=>pickModel(e.target.value);
 $("thinkToggle").onchange=e=>{state.think=!!e.target.checked;localStorage.setItem(LS.think,state.think?"1":"0");setSetupMsg(state.think?"🧠 Thinking ON — replies may be slower and use more tokens.":"💬 Thinking OFF — faster, fewer tokens.","ok");};
+$("voiceToggle").onchange=e=>{state.voice=!!e.target.checked;localStorage.setItem(LS.voice,state.voice?"1":"0");setSetupMsg(state.voice?"🔊 Voice ON — each AI reply gets a play button (SoniaNeural).":"🔇 Voice OFF — text only.","ok")};
 $("toggleKey").onclick=()=>{const i=$("apiKey");i.type=i.type==="password"?"text":"password";$("toggleKey").textContent=i.type==="password"?"Show":"Hide";};
 $("fontSize").oninput=e=>applyFontSize(parseInt(e.target.value,10));
 $("sendBtn").onclick=sendMessage;
