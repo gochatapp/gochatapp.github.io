@@ -447,13 +447,24 @@ async function fetchEdgeTtsMp3(text){
         }
       };
       ws.onerror = (err) => {
-        console.error('[TTS] WebSocket error:', err);
-        reject(new Error('WebSocket error: ' + err.message));
+        console.error('[TTS] WebSocket error event:', err);
+        // WebSocket error events don't have .message, use type instead
+        reject(new Error('WebSocket error: connection failed (check console for details)'));
       };
       ws.onclose = (e) => {
         console.log('[TTS] WebSocket closed, code:', e.code, 'reason:', e.reason, 'wasClean:', e.wasClean);
+        // Common close codes: 1000=normal, 1006=abnormal (no close frame), 1007=invalid data, 1008=policy violation
+        if (e.code === 1006) {
+          console.error('[TTS] Connection closed abnormally (code 1006). Likely: network issue, CORS, or endpoint blocked.');
+        } else if (e.code === 1007) {
+          console.error('[TTS] Invalid frame payload data (code 1007). Protocol mismatch?');
+        } else if (e.code === 1008) {
+          console.error('[TTS] Policy violation (code 1008). Origin/Referer blocked?');
+        } else if (e.code === 1011) {
+          console.error('[TTS] Server error (code 1011). Token or request format invalid?');
+        }
         if(receivedAudio.length > 0) resolve(receivedAudio);
-        else reject(new Error('WebSocket closed without audio'));
+        else reject(new Error('WebSocket closed without audio (code ' + e.code + ')'));
       };
       setTimeout(() => { ws.close(); reject(new Error('TTS timeout')); }, 15000);
     });
