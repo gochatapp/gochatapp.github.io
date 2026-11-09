@@ -495,15 +495,12 @@ async function attachVoicePlayer(bubbleEl, replyText){
   placeholder.textContent = '🔊 Generating voice…';
   bubbleEl.appendChild(placeholder);
 
+  // Try Edge TTS first (SoniaNeural voice)
   try{
     const blob = await fetchEdgeTtsMp3(replyText);
     placeholder.remove();
     if(!blob || blob.size === 0){
-      const err = document.createElement('div');
-      err.className = 'voice-generating';
-      err.textContent = '🔊 Voice unavailable (empty response)';
-      bubbleEl.appendChild(err);
-      return;
+      throw new Error('Empty response from Edge TTS');
     }
     const url = URL.createObjectURL(blob);
     const audio = document.createElement('audio');
@@ -511,16 +508,64 @@ async function attachVoicePlayer(bubbleEl, replyText){
     audio.preload = 'none';
     audio.src = url;
     bubbleEl.appendChild(audio);
+    return; // Success - used Edge TTS
   } catch (e) {
-    placeholder.remove();
+    console.warn('[TTS] Edge TTS failed, falling back to speechSynthesis:', e);
+    // Fall through to speechSynthesis fallback
+  }
+
+  // Fallback: Browser speechSynthesis (built-in, works offline)
+  // Ensure voices are loaded (async in some browsers)
+  await new Promise(resolve => {
+    if (window.speechSynthesis.getVoices().length > 0) {
+      resolve();
+    } else {
+      window.speechSynthesis.onvoiceschanged = () => resolve();
+      // Fallback timeout in case event never fires
+      setTimeout(resolve, 500);
+    }
+  });
+
+  placeholder.remove();
+  try {
+    if (!window.speechSynthesis) {
+      throw new Error('speechSynthesis not supported in this browser');
+    }
+    const clean = stripMarkdown(replyText).slice(0, 3000);
+    if (!clean) throw new Error('No text to speak');
+
+    window.speechSynthesis.cancel(); // Stop any ongoing speech
+    const utter = new SpeechSynthesisUtterance(clean);
+    utter.lang = 'en-GB'; // British English
+    utter.rate = 1.0;
+    utter.pitch = 1.0;
+    utter.volume = 1.0;
+
+    // Try to find a British female voice
+    const voices = window.speechSynthesis.getVoices();
+    const britishFemale = voices.find(v => v.lang.startsWith('en-GB') && /female/i.test(v.name));
+    if (britishFemale) utter.voice = britishFemale;
+
+    const fallbackMsg = document.createElement('div');
+    fallbackMsg.className = 'voice-generating';
+    fallbackMsg.textContent = '🔊 Playing via browser speechSynthesis…';
+    bubbleEl.appendChild(fallbackMsg);
+
+    utter.onend = () => fallbackMsg.remove();
+    utter.onerror = (ev) => {
+      fallbackMsg.textContent = '🔊 Voice error: ' + (ev.error || 'speechSynthesis failed');
+      console.error('[TTS] speechSynthesis error:', ev);
+    };
+
+    window.speechSynthesis.speak(utter);
+  } catch (e2) {
     const err = document.createElement('div');
     err.className = 'voice-generating';
-    // Show actual error message for debugging
-    const msg = e?.message || String(e);
+    const msg = e2?.message || String(e2);
     err.textContent = '🔊 Voice error: ' + msg.slice(0, 120);
-    err.title = msg; // full error on hover
+    err.title = msg;
     bubbleEl.appendChild(err);
-    console.error('TTS failed:', e);
+    console.error('[TTS] Both Edge TTS and speechSynthesis failed:', e2);
   }
 }
 
