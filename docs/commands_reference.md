@@ -154,7 +154,7 @@ command-line flags.
 | `release` / `rel` | — | Release/version info |
 | `web` | — | Show the chat website as a tappable link |
 | `web asset` / `web assets` | — | Show the chat asset browser as a tappable link |
-| `install [gisturl]` | — | Install a role or story from a public GitHub gist. Roles need `GOCHATAPPROLETAG_<name>.txt` plus `thumb.md` |
+| `install [gisturl]` | — | Install a role or story from a public GitHub gist. Roles need `GOCHATAPPROLETAG_<name>.txt` plus `thumb.md`. Stories need `GOCHATAPPSTORYTAG_<name>.md` (content `story`, or `backstory` + optional backstory text), `character_<name>.txt` / `storyelement_<name>.txt` files, an optional story `thumb.md`, and optional per-character `<name>_thumb.md` images |
 
 ---
 ## Usage Notes

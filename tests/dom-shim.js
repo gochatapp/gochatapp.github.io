@@ -9,11 +9,12 @@ const path = require("path");
 const vm = require("vm");
 
 const ROOT = path.resolve(__dirname, "..");
-const APP = path.join(ROOT, "charxi_online.html");
+const CHAT_DIR = path.join(ROOT, "chat");
+const APP = path.join(CHAT_DIR, "charxi_online.html");
 // charxi_online.html used to inline its CSS/JS; it now links these two files.
 // The helpers below read whichever layout is on disk, so tests survive the split.
-const CSS_FILE = path.join(ROOT, "charxi_online.css");
-const JS_FILE = path.join(ROOT, "charxi_online.js");
+const CSS_FILE = path.join(CHAT_DIR, "charxi_online.css");
+const JS_FILE = path.join(CHAT_DIR, "charxi_online.js");
 const KEY_FILE = path.join(ROOT, "tools", "openrouter_api_key.txt");
 
 function parseChildren(html) {
@@ -34,9 +35,44 @@ function parseChildren(html) {
 
 function flatten(list) {
   const out = [];
-  const walk = arr => arr.forEach(el => { out.push(el); walk(el.children); });
+  const walk = arr => arr.forEach(el => { out.push(el); if (el.children) walk(el.children); });
   walk(list);
   return out;
+}
+function matchesSelector(el, sel) {
+  if (!sel) return false;
+  const parts = String(sel).trim().split(/\s+/);
+  return parts.every(part => matchesSimple(el, part));
+}
+function matchesSimple(el, part) {
+  if (!el || !el.tagName) return false;
+  let rest = part;
+  const tagM = rest.match(/^([a-zA-Z][\w-]*)/);
+  if (tagM) { if (el.tagName.toLowerCase() !== tagM[1].toLowerCase()) return false; rest = rest.slice(tagM[1].length); }
+  const idM = rest.match(/#([\w-]+)/); if (idM) { if (el.id !== idM[1]) return false; rest = rest.replace("#" + idM[1], ""); }
+  const classRe = /\.([\w-]+)/g; let c;
+  while ((c = classRe.exec(rest))) { if (!el._classes || !el._classes.has(c[1])) return false; }
+  rest = rest.replace(/\.[\w-]+/g, "");
+  const attrRe = /\[([\w-]+)(?:\^?=(?:"([^"]*)"|'([^']*)'|\S+))?\]/g; let a;
+  while ((a = attrRe.exec(rest))) {
+    const name = a[1]; const expected = a[2] != null ? a[2] : a[3];
+    const actual = name === "id" ? el.id : el.getAttribute ? el.getAttribute(name) : (el.dataset && el.dataset[name]);
+    if (expected != null) {
+      if (String(actual == null ? "" : actual).indexOf(expected) !== 0 && String(actual || "") !== expected) return false;
+    } else if (!actual) return false;
+  }
+  rest = rest.replace(/\[[\w-]+(?:\^?=(?:"[^"]*"|'[^']*'|\S+))?\]/g, "");
+  if (rest.trim() && rest.trim() !== "*") return false;
+  return true;
+}
+function queryAllIn(list, sel) {
+  const all = flatten(list);
+  return all.filter(el => matchesSelector(el, sel));
+}
+function setParents(el, parent) {
+  if (!el) return;
+  el._parent = parent || null;
+  (el.children || []).forEach(c => setParents(c, el));
 }
 
 class El {
@@ -78,15 +114,38 @@ class El {
     if (k.startsWith("data-")) this.dataset[k.slice(5)] = String(v);
   }
   getAttribute(k) { return this._attrs[k]; }
-  get innerHTML() { return this._html; }
-  set innerHTML(v) { this._html = String(v); this.children = parseChildren(this._html); }
-  get textContent() { return this._text || this.children.map(c => c.textContent).join(""); }
-  set textContent(v) { this._text = String(v); }
-  appendChild(c) { this.children.push(c); return c; }
+  removeAttribute(k) {
+    delete this._attrs[k];
+    if (k === "src") this.src = "";
+    if (k === "value") this.value = "";
+  }
+  get innerHTML() { return this._html + this.children.map(c => c.innerHTML || "").join(""); }
+  set innerHTML(v) { this._html = String(v); this.children = parseChildren(this._html); this.children.forEach(c => { c._parent = this; }); }
+  get textContent() { return this._text + this.children.map(c => c.textContent).join(""); }
+  set textContent(v) { this._text = String(v); this.children = []; }
+  appendChild(c) { c._parent = this; this.children.push(c); return c; }
+  append(...nodes) { nodes.forEach(n => this.appendChild(n)); }
   removeChild(c) { const i = this.children.indexOf(c); if (i >= 0) this.children.splice(i, 1); return c; }
-  remove() { this.removed = true; }
+  get firstChild() { return this.children[0] || null; }
+  get lastChild() { return this.children[this.children.length - 1] || null; }
+  get parentNode() { return this._parent || null; }
+  set parentNode(v) { this._parent = v; }
+  get parentElement() { return this._parent || null; }
+  contains(node) { if (!node) return false; if (node === this) return true; return this.children.some(c => c.contains ? c.contains(node) : c === node); }
+  getElementById(id) { for (const el of flatten([this])) if (el.id === id) return el; return null; }
+  querySelector(sel) { return this.querySelectorAll(sel)[0] || null; }
+  querySelectorAll(sel) { return queryAllIn([this], sel); }
+  getElementsByClassName(cls) { return flatten([this]).filter(el => el._classes && el._classes.has(cls)); }
+  getElementsByTagName(tag) { const t = String(tag).toUpperCase(); return flatten([this]).filter(el => el.tagName === t); }
+  insertAdjacentHTML(pos, html) { const nodes = parseChildren(html); if (pos === "beforeend") nodes.forEach(n => this.appendChild(n)); else if (pos === "afterbegin") nodes.forEach(n => this.children.unshift(n)); else if (pos === "beforebegin" && this._parent) nodes.forEach(n => this._parent.children.splice(this._parent.children.indexOf(this), 0, n)); else if (pos === "afterend" && this._parent) nodes.forEach(n => this._parent.children.splice(this._parent.children.indexOf(this) + 1, 0, n)); if (this._html != null) this._html = String(this._html) + String(html); }
+  closest(sel) { let el = this; while (el) { if (typeof sel === "string" && el.tagName && matchesSelector(el, sel)) return el; el = el._parent || el.parentNode; } return null; }
+  replaceChildren(...nodes) { this.children = []; nodes.forEach(n => this.appendChild(n)); this._text = ""; }
+  dispatchEvent(ev) { const type = typeof ev === "string" ? ev : ev && ev.type; if (type && this._listeners[type]) this._listeners[type].forEach(fn => fn.call(this, ev)); if (type && this["on" + type]) try { this["on" + type].call(this, ev); } catch (e) { /* ignore */ } return true; }
+  scrollIntoView() {}
+  blur() {}
+  remove() { if (this._parent) { const i = this._parent.children.indexOf(this); if (i >= 0) this._parent.children.splice(i, 1); } this.removed = true; }
   focus() { this.focused = true; }
-  click() { if (typeof this.onclick === "function") this.onclick({ target: this, preventDefault() {} }); }
+  click() { if (typeof this.onclick === "function") this.onclick({ target: this, preventDefault() {} }); else this.dispatchEvent({ type: "click" }); }
   addEventListener(type, fn) { (this._listeners[type] = this._listeners[type] || []).push(fn); }
   removeEventListener(type, fn) {
     const a = this._listeners[type] || [];
@@ -123,29 +182,30 @@ function makeStorage() {
 
 // Contents of every local file referenced by `re` (the capture group is the URL).
 // Query strings (cache busters like ?v=1) are stripped; remote URLs are skipped.
-function readLocalAssets(html, re) {
+// Resolves relative to the HTML file's directory (APP_DIR), not repo root.
+function readLocalAssets(html, re, appDir) {
   const out = [];
   for (const m of html.matchAll(re)) {
     const href = String(m[1]).trim();
     if (/^(?:[a-z]+:|\/\/)/i.test(href)) continue; // remote, not our file
-    const file = path.join(ROOT, href.split("?")[0]);
+    const file = path.join(appDir, href.split("?")[0]);
     if (fs.existsSync(file)) out.push(fs.readFileSync(file, "utf8"));
   }
   return out;
 }
 
 // The app's JavaScript: inline <script> blocks first, then any local <script src>.
-function extractAppScript(html) {
+function extractAppScript(html, appDir) {
   const blocks = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1])
-    .concat(readLocalAssets(html, /<script\b[^>]*\ssrc="([^"]+)"/g));
+    .concat(readLocalAssets(html, /<script\b[^>]*\ssrc="([^"]+)"/g, appDir));
   if (!blocks.length) throw new Error("no app <script> found in charxi_online.html");
   return blocks.join("\n");
 }
 
 // The page's CSS: inline <style> blocks plus any linked local stylesheet.
-function loadPageCss(html) {
+function loadPageCss(html, appDir) {
   return [...html.matchAll(/<style>([\s\S]*?)<\/style>/g)].map(m => m[1])
-    .concat(readLocalAssets(html, /<link\b[^>]*\shref="([^"]+\.css[^"]*)"/g))
+    .concat(readLocalAssets(html, /<link\b[^>]*\shref="([^"]+\.css[^"]*)"/g, appDir))
     .join("\n");
 }
 
@@ -161,11 +221,13 @@ function bootApp({ html, script, fetchImpl, seed }) {
   const document = {
     body: new El("body"),
     documentElement: new El("html"),
-    getElementById: id => els.get(id) || null,
+    getElementById: id => els.get(id) || document.body.getElementById(id) || document.documentElement.getElementById(id) || null,
     createElement: tag => new El(tag),
     createTextNode: text => ({ nodeType: 3, textContent: String(text) }),
-    querySelector: () => null,
-    querySelectorAll: () => [],
+    querySelector: sel => { const found = flatten([...els.values()]).filter(el => matchesSelector(el, sel)); return found[0] || null; },
+    querySelectorAll: sel => flatten([...els.values()]).filter(el => matchesSelector(el, sel)),
+    addEventListener: () => {},
+    readyState: "complete",
   };
   const localStorage = makeStorage();
   if (seed) Object.keys(seed).forEach(k => localStorage.setItem(k, seed[k]));
@@ -174,7 +236,7 @@ function bootApp({ html, script, fetchImpl, seed }) {
     document,
     localStorage,
     fetch: fetchImpl,
-    location: { href: "file:///charxi_online.html" },
+    location: { href: "file:///chat/charxi_online.html" },
     CSS: { escape: s => String(s).replace(/["\\]/g, "\\$&") },
     TextEncoder,
     Blob,
@@ -200,13 +262,15 @@ function bootApp({ html, script, fetchImpl, seed }) {
 
 function readKey() {
   if (!fs.existsSync(KEY_FILE)) throw new Error(`key file not found: ${KEY_FILE}`);
-  const key = fs.readFileSync(KEY_FILE, "utf8").trim();
-  if (!key) throw new Error("key file is empty");
-  return key;
+  const content = fs.readFileSync(KEY_FILE, "utf8").trim();
+  if (!content) throw new Error("key file is empty");
+  // Format: "key [model]" — model defaults to "openrouter/free" if not specified
+  const parts = content.split(/\s+/);
+  return { key: parts[0], model: parts[1] || "openrouter/free" };
 }
 
 module.exports = {
-  ROOT, APP, CSS_FILE, JS_FILE, KEY_FILE,
+  ROOT, CHAT_DIR, APP, CSS_FILE, JS_FILE, KEY_FILE,
   El, parseChildren, flatten, makeStorage,
   extractAppScript, extractInlineScript: extractAppScript, loadPageCss,
   bootApp, readKey,

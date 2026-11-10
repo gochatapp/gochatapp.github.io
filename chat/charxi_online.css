@@ -40,6 +40,12 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 #sidebar header{padding:14px;border-bottom:1px solid var(--line)}
 #sidebar header h2{font-size:1em}
 #sidebar .findRolesLink{display:block;margin-top:10px;padding:9px 12px;border-radius:10px;background:var(--acc);color:#fff;text-align:center;text-decoration:none;font-weight:700}
+/* sidebar tabs */
+.sideTabs{display:flex;gap:6px;margin-top:10px}
+.sideTab{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--mut);padding:8px 12px;border-radius:10px;font-size:.85em;font-weight:600;transition:.15s}
+.sideTab:hover:not(.active){background:var(--bg);color:var(--txt);border-color:var(--acc)}
+.sideTab.active{background:var(--acc);border-color:var(--acc);color:#fff}
+
 #sidebar .findRolesLink:hover{background:var(--acc2)}
 #sidebar .findRolesLink:focus-visible{outline:2px solid #fff;outline-offset:2px}
 #roleList{flex:1;overflow-y:auto;padding:8px}
@@ -52,11 +58,51 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .roleItem .rprev{font-size:.8em;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .badge{font-size:.68em;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:99px;background:#2a2f42;color:var(--mut);flex:none}
 .badge.story{background:#3a2a12;color:#ffb84d}
+#storyList{flex:1;overflow-y:auto;padding:8px}
+.storyGroup{border:1px solid transparent;border-radius:12px;margin-bottom:6px}
+.storyGroup.expanded{background:var(--panel2);border-color:var(--line)}
+.storyItem{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;padding:9px;border-radius:12px;border:1px solid transparent}
+.storyItem:hover{background:var(--panel2)}.storyItem.active{background:var(--panel2);border-color:var(--acc)}
+.storyItem img{width:44px;height:44px;border-radius:50%;object-fit:cover;background:#333;flex:none}
+.storyChevron{margin-left:auto;color:var(--mut);font-size:.8em;flex:none;transition:transform .15s}
+.storyGroup.expanded .storyChevron{transform:rotate(90deg)}
+.storyChildren{padding:2px 8px 10px 18px;display:none}
+.storyGroup.expanded .storyChildren{display:block}
+.storyChild{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;padding:7px 9px;border-radius:10px;border:1px solid transparent;margin-bottom:2px}
+.storyChild:hover{background:var(--bg)}.storyChild.active{background:var(--bg);border-color:var(--acc)}
+.storyChild.disabled{opacity:.45;cursor:not-allowed;background:var(--panel2);border-color:var(--line)}
+.storyChild.disabled:hover{background:var(--panel2)}
+.storyChild.disabled .cname{color:var(--mut)}
+.storyChild img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#333;flex:none}
+.storyChild .avaFallback{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#35c3e8);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;font-size:.8em}
+.storyChild .childIcon{width:30px;height:30px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.9em;flex:none}
+.storyChild .meta{min-width:0;flex:1}
+.storyChild .cname{font-weight:600;font-size:.92em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.storyChild .cprev{font-size:.75em;color:var(--mut);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.emptyStateSide{padding:18px;text-align:center;font-size:.85em;color:var(--mut)}
 #addRole{padding:12px;border-top:1px solid var(--line)}
+
+/* context menu for delete */
+.roleItem, .storyItem, .storyChild{position:relative}
+.delBtn{display:none;background:none;border:none;color:var(--mut);font-size:1.1em;padding:2px 8px;cursor:pointer;opacity:0;transition:opacity .15s}
+.roleItem:hover .delBtn, .storyItem:hover .delBtn, .storyChild:hover .delBtn{display:block;opacity:1}
+.delBtn:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:4px}
+.ctxMenu{position:fixed;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:4px;box-shadow:0 8px 24px rgba(0,0,0,.4);z-index:100;min-width:200px}
+.ctxMenu button{display:block;width:100%;text-align:left;background:none;border:none;padding:8px 12px;border-radius:6px;color:var(--txt);font-size:.85em;cursor:pointer}
+.ctxMenu button:hover{background:var(--panel2)}
+.ctxMenu button.danger{color:var(--err)}
+.ctxMenu hr{border:none;border-top:1px solid var(--line);margin:4px 0}
+@media(max-width:760px){
+  .delBtn{display:block;opacity:1}
+}
 #addRole input{width:100%;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:.85em;margin-bottom:8px;outline:none}
 #addRoleMsg{font-size:.8em;color:var(--err);min-height:1em;margin-top:6px}
 #main{flex:1;display:flex;flex-direction:column;min-width:0}
 #chatHeader{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel)}
+#voiceCtl{display:flex;align-items:center;gap:6px}
+#voiceSpeed{width:110px;accent-color:var(--acc)}
+#voiceSpeed:disabled{opacity:.45;cursor:not-allowed}
+#voiceHdrBtn[aria-pressed="true"]{border-color:var(--acc);color:var(--acc2)}
 #chatHeader img{width:38px;height:38px;border-radius:50%;object-fit:cover}
 #chatHeader .title{flex:1;min-width:0}
 #chatHeader .title b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -102,4 +148,5 @@ input[type=range]{width:100%;accent-color:var(--acc)}
   #menuBtn{display:block}
   .msg{max-width:92%}
   #chatHeader .title span{max-width:30vw}
+  #voiceCtl{display:none}
 }

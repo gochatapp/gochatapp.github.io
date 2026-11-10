@@ -1,10 +1,12 @@
 // Verifies that Voice (Edge TTS) feature is correctly implemented in charxi_online.html
 // Run: node tests/voice-tts.test.js
 const fs = require('fs');
+const path = require('path');
 const vm = require('vm');
 
-const APP = 'c:/dev/vivid2.0/gochatapp.github.io/charxi_online.html';
-const JS_FILE = 'c:/dev/vivid2.0/gochatapp.github.io/charxi_online.js';
+const APP = path.join(__dirname, '..', 'chat', 'charxi_online.html');
+const JS_FILE = path.join(__dirname, '..', 'chat', 'charxi_online.js');
+const CSS_FILE = path.join(__dirname, '..', 'chat', 'charxi_online.css');
 
 function check(desc, ok, detail=''){
   const status = ok ? '✅ PASS' : '❌ FAIL';
@@ -77,8 +79,32 @@ async function main(){
   check('boot() sets voiceToggle.checked', /voiceToggle.*checked.*state\.voice/.test(js));
 
   /* 13. CSS has audio styling */
-  const css = fs.readFileSync('c:/dev/vivid2.0/gochatapp.github.io/charxi_online.css', 'utf8');
+  const css = fs.readFileSync(CSS_FILE, 'utf8');
   check('CSS styles audio element', /audio\{/.test(css) || /\..*audio/.test(css));
+
+  /* 14. Voice speed feature */
+  check('LS.voiceSpeed key defined', /voiceSpeed:\"gochat_voiceSpeed\"/.test(js));
+  check('state.voiceSpeed default 1.0', /voiceSpeed:1\.0/.test(js));
+  check('stepToRate function exists', /function stepToRate\(/.test(js));
+  check('stepToRate formula 1 + (step-1)*0.125', /1\+\(step-1\)\*0\.125|0\.125.*step/.test(js));
+  check('stepToRate clamped to 2', /Math\.min\(2,/.test(js));
+  check('syncVoiceUI function exists', /function syncVoiceUI\(/.test(js));
+  check('syncVoiceUI disables slider when voice off', /s\.disabled=!on/.test(js));
+  check('setVoiceSpeed function exists', /function setVoiceSpeed\(/.test(js));
+  check('setVoiceSpeed validates 1-10', /n<1\|\|n>10/.test(js));
+  check('.voice speed subcommand', /sub===\"speed\"/.test(js));
+  check('.voice speed shows current', /Voice speed:.*state\.voiceSpeed/.test(js));
+  check('boot() loads voiceSpeed', /localStorage\.getItem\(LS\.voiceSpeed\)/.test(js));
+  check('utter.rate uses stepToRate(state.voiceSpeed)', /utter\.rate\s*=\s*stepToRate\(state\.voiceSpeed\)/.test(js));
+  check('HTML has voiceHdrBtn', /id=\"voiceHdrBtn\"/.test(html));
+  check('HTML has voiceSpeed slider min=1 max=10', /id=\"voiceSpeed\".*min=\"1\".*max=\"10\"/.test(html));
+  check('CSS hides voiceCtl on mobile', /#voiceCtl\{display:none\}/.test(css));
+  check('CSS styles voiceSpeed slider', /#voiceSpeed\{/.test(css));
+  check('voiceHdrBtn onclick handler', /voiceHdrBtn.*onclick/.test(js));
+  check('voiceSpeed oninput handler', /voiceSpeed.*oninput/.test(js));
+  check('voiceToggle onchange calls syncVoiceUI', /voiceToggle.*onchange.*syncVoiceUI/.test(js));
+  check('.help includes .voice speed', /\.voice speed.*1-10/.test(js));
+  check('showStatus includes voice speed', /Voice: on.*speed.*state\.voiceSpeed/.test(js));
 
   console.log('\n✅ All voice TTS tests passed!');
 }

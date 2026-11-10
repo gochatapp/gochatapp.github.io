@@ -4,9 +4,9 @@
 "use strict";
 const fs = require("fs");
 const path = require("path");
+const { readKey } = require("./dom-shim");
 
 const ROOT = path.resolve(__dirname, "..");
-const KEY_FILE = path.join(ROOT, "tools", "openrouter_api_key.txt");
 const OR = "https://openrouter.ai/api/v1";
 const MODEL = "google/gemma-3-4b-it";
 
@@ -16,16 +16,9 @@ function check(name, cond, extra = "") {
   if (!cond) failures++;
 }
 
-function readKey() {
-  if (!fs.existsSync(KEY_FILE)) throw new Error(`key file not found: ${KEY_FILE}`);
-  const key = fs.readFileSync(KEY_FILE, "utf8").trim();
-  if (!key) throw new Error("key file is empty");
-  return key;
-}
-
 async function main() {
-  const key = readKey();
-  console.log(`Key loaded from tools/openrouter_api_key.txt (length ${key.length}, masked ${key.slice(0, 7)}...${key.slice(-3)})`);
+  const { key, model } = readKey();
+  console.log(`Key loaded from tools/openrouter_api_key.txt (length ${key.length}, masked ${key.slice(0, 7)}...${key.slice(-3)}, model: ${model})`);
   check("key looks like an OpenRouter key", key.startsWith("sk-or-"));
 
   // 1. Validate key

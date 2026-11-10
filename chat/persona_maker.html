@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Persona Maker — Character XI</title>
+  <link rel="stylesheet" href="charxi_online.css?v=2">
+  <style>
+    /* Persona Maker — styles only; all theme colours / fonts come from charxi_online.css. */
+    #makerView{min-height:100dvh;display:flex;align-items:flex-start;justify-content:center;padding:20px 14px;overflow-y:auto}
+    .makerCard{width:100%;max-width:1000px;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:26px 22px;margin:auto 0}
+    .section{background:var(--panel2);border:1px solid var(--line);border-radius:var(--rad);padding:18px 16px;margin-bottom:18px}
+    .sectionHead{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+    .sectionHead h2{font-size:1em;letter-spacing:.02em}
+    .sectionGreen h2{color:var(--ok)}
+    .sectionBlue h2{color:var(--acc2)}
+    .sectionHead .spacer{flex:1}
+    .section label{display:block;font-weight:600;font-size:.85em;margin:14px 0 6px}
+    .section label:first-of-type{margin-top:0}
+    .section input[type=text],.section select,.section textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:11px 12px;outline:none}
+    .section textarea{min-height:150px;resize:vertical;font-family:inherit}
+    .section textarea.small{min-height:80px}
+    .section input:focus,.section select:focus,.section textarea:focus{border-color:var(--acc)}
+    .helpText{font-size:.8em;color:var(--mut);margin-top:6px}
+    .fieldRow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+    .fieldRow>div{flex:1;min-width:220px}
+    .btnRow{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+    .btnRow .btn{width:auto;margin-top:0}
+    .btnEnhance{flex:1;min-width:200px;background:var(--ok);color:#06280f}
+    .btnEnhance:hover:not(:disabled){background:#46d387}
+    .btnSave{flex:1;min-width:200px}
+    .btn.sm{padding:9px 13px;font-size:.85em}
+    .btn.sm.danger{background:var(--panel2);border:1px solid var(--err);color:var(--err)}
+    #templatePreview{background:var(--bg);border:1px dashed var(--line);border-radius:10px;padding:12px;max-height:240px;overflow:auto;font-size:.8em;color:var(--mut);white-space:pre-wrap;margin-top:10px;display:none}
+    #templatePreview.show{display:block}
+    #imgPreview{width:160px;height:160px;object-fit:cover;border-radius:12px;border:1px solid var(--line);display:none;margin-top:12px}
+    #imgPreview.show{display:block}
+    #makerMsg{margin-top:14px;font-size:.88em;min-height:1.2em;color:var(--mut);text-align:center}
+    #makerMsg.ok{color:var(--ok)}
+    #makerMsg.err{color:var(--err)}
+    #backToChatBtn{margin-top:12px}
+    .perchanceNote{font-size:.85em;color:var(--mut);margin:10px 0 4px;white-space:nowrap;overflow-x:auto}
+    .perchanceNote a{color:var(--acc2)}
+    .perchanceNote b{color:var(--txt)}
+  </style>
+</head>
+<body>
+<!-- ============ PERSONA MAKER ============ -->
+<section id="makerView">
+  <div class="makerCard">
+
+    <!-- Card 1: Persona Selection & Template -->
+    <div class="section">
+      <div class="sectionHead"><h2>1. PERSONA &amp; TEMPLATE SETUP</h2></div>
+      <div class="fieldRow">
+        <div>
+          <label for="personaSel">Select Persona</label>
+          <select id="personaSel"><option value="">Select or create a persona...</option></select>
+          <p class="helpText">Load existing or type new name below.</p>
+        </div>
+        <div>
+          <label for="personaName">Persona Name</label>
+          <input type="text" id="personaName" placeholder="e.g. Aiko, Assistant">
+          <p class="helpText">Saved locally in this browser (gochat_personas).</p>
+        </div>
+      </div>
+
+      <label for="templateSel">Template</label>
+      <div class="fieldRow">
+        <div>
+          <select id="templateSel"><option value="">No template</option></select>
+        </div>
+        <button class="btn ghost sm" id="previewTemplateBtn" type="button">Preview</button>
+      </div>
+      <div id="templatePreview" aria-live="polite"></div>
+      <p class="helpText">Templates are loaded from persona_templates/ on this website. No template is fine - AI Enhance will still work.</p>
+    </div>
+
+    <!-- Card 2: Persona Description & AI Tools -->
+    <div class="section sectionGreen">
+      <div class="sectionHead"><h2>2. PERSONA DESCRIPTION &amp; AI TOOLS</h2></div>
+      <label for="personaDesc">Persona Description</label>
+      <textarea id="personaDesc" placeholder="Describe the persona in plain words..."></textarea>
+
+      <div class="btnRow">
+        <button class="btn btnEnhance" id="enhanceBtn" type="button">AI Enhance</button>
+        <button class="btn btnSave" id="savePersonaBtn" type="button">Save Persona</button>
+        <button class="btn ghost sm" id="undoPersonaBtn" type="button">Undo</button>
+        <button class="btn sm danger" id="clearBtn" type="button">Clear</button>
+      </div>
+      <p class="helpText">AI Enhance rewrites the description using the selected template, then creates the Perchance prompt below. Undo restores the description from before the last Enhance.</p>
+    </div>
+
+    <!-- Card 3: Image Prompt & Media -->
+    <div class="section sectionBlue">
+      <div class="sectionHead">
+        <h2>3. IMAGE PROMPT &amp; MEDIA</h2>
+        <div class="spacer"></div>
+        <button class="btn ghost sm" id="copyPerchanceBtn" type="button">Copy Prompt</button>
+      </div>
+
+      <p class="perchanceNote">
+        Generate image at <a href="https://perchance.org/ai-text-to-image-generator" target="_blank" rel="noopener noreferrer">perchance.org/ai-text-to-image-generator</a>. Use <b>Drawn Anime</b>, Shape: <b>Square</b>.
+      </p>
+
+      <label for="perchancePrompt">Perchance Prompt Output</label>
+      <textarea id="perchancePrompt" class="small" placeholder="Image prompt appears here..."></textarea>
+
+      <div class="btnRow">
+        <button class="btn ghost sm" id="uploadImageBtn" type="button" style="flex:1">Upload Image</button>
+        <button class="btn ghost sm" id="clearImageBtn" type="button">Clear</button>
+      </div>
+      <input type="file" id="imageUploadInput" accept="image/*" hidden>
+      <img id="imgPreview" alt="Persona image preview">
+      <div id="imgMeta" class="helpText"></div>
+      <p class="helpText">Upload a Perchance image - it is resized to 450x450 automatically. Ctrl+V paste still works.</p>
+    </div>
+
+    <div id="makerMsg" aria-live="polite"></div>
+    <button class="btn" id="backToChatBtn" type="button">Back to Chat</button>
+  </div>
+</section>
+
+<script src="persona_maker.js?v=2"></script>
+</body>
+</html>

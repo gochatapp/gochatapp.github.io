@@ -9,6 +9,7 @@
 // Reads the key from tools/openrouter_api_key.txt (never prints it — only a hash).
 "use strict";
 const fs = require("fs");
+const path = require("path");
 const vm = require("vm");
 const crypto = require("crypto");
 const { APP, extractAppScript, bootApp, readKey } = require("./dom-shim");
@@ -46,7 +47,7 @@ async function runLoadModels(document, key) {
 
 async function main() {
   const html = fs.readFileSync(APP, "utf8");
-  const script = extractAppScript(html);
+  const script = extractAppScript(html, path.dirname(APP));
 
   /* 1. the app script must compile — a SyntaxError here silently disables every handler */
   let parseError = null;
@@ -118,9 +119,9 @@ async function main() {
   check("button re-enabled after failure", r2.btnDisabled === false);
 
   /* 8. live check against the real OpenRouter API (free: /models costs no tokens) */
-  const key = readKey();
+  const { key, model } = readKey();
   const keyId = crypto.createHash("sha256").update(key).digest("hex").slice(0, 10);
-  console.log(`\nLive check — key from tools/openrouter_api_key.txt (sha256 ${keyId}…, ${key.length} chars)`);
+  console.log(`\nLive check — key from tools/openrouter_api_key.txt (sha256 ${keyId}…, ${key.length} chars, model: ${model})`);
   check("key looks like an OpenRouter key", key.startsWith("sk-or-"));
   const authRes = await fetch("https://openrouter.ai/api/v1/auth/key", {
     headers: { Authorization: `Bearer ${key}` },

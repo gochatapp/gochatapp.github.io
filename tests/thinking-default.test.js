@@ -9,6 +9,7 @@
 // so the app must send the flag, and its default must be off.
 "use strict";
 const fs = require("fs");
+const path = require("path");
 const vm = require("vm");
 const crypto = require("crypto");
 const { APP, extractAppScript, loadPageCss, bootApp, readKey } = require("./dom-shim");
@@ -76,8 +77,8 @@ async function callChat(model, key, extra) {
 
 async function main() {
   const html = fs.readFileSync(APP, "utf8");
-  const script = extractAppScript(html);   // charxi_online.js
-  const css = loadPageCss(html);           // charxi_online.css
+  const script = extractAppScript(html, path.dirname(APP));   // charxi_online.js
+  const css = loadPageCss(html, path.dirname(APP));           // charxi_online.css
 
   /* 1. Setup screen exposes a thinking control that starts unchecked */
   check("#thinkToggle exists in the markup", /id="thinkToggle"/.test(html));
@@ -173,9 +174,9 @@ async function main() {
   check("no error bubble was shown", !/\u274c/.test(forcedText), forcedText.slice(0, 120));
 
   /* 8. live proof against OpenRouter (free reasoning models only -> no cost) */
-  const key = readKey();
+  const { key, model: defaultModel } = readKey();
   const keyId = crypto.createHash("sha256").update(key).digest("hex").slice(0, 10);
-  console.log(`\nLive check — key from tools/openrouter_api_key.txt (sha256 ${keyId}…, ${key.length} chars)`);
+  console.log(`\nLive check — key from tools/openrouter_api_key.txt (sha256 ${keyId}…, ${key.length} chars, model: ${defaultModel})`);
   const auth = await fetch("https://openrouter.ai/api/v1/auth/key", { headers: { Authorization: `Bearer ${key}` } });
   check("GET /auth/key returns 200", auth.ok, `HTTP ${auth.status}`);
 

@@ -1,11 +1,12 @@
 "use strict";
 const assert = require("assert");
 const fs = require("fs");
+const path = require("path");
 const { APP, extractAppScript, bootApp } = require("./dom-shim");
 
 async function main() {
   const html = fs.readFileSync(APP, "utf8");
-  const app = bootApp({ html, script: extractAppScript(html) });
+  const app = bootApp({ html, script: extractAppScript(html, path.dirname(APP)) });
   let downloadedBlob = null;
   app.ctx.URL = {
     createObjectURL(blob) { downloadedBlob = blob; return "blob:test"; },
