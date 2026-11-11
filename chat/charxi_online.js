@@ -13,7 +13,7 @@ const getPersonas=()=>loadJSON(LS.personas,[]);
 const savePersonas=p=>saveJSON(LS.personas,p);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const OR="https://openrouter.ai/api/v1";
-let state={apiKey:"",model:"",roles:[],chats:{},activeRoleId:null,mode:"chat",busy:false,models:[],filtered:[],think:false,length:null,voice:false,voiceSpeed:1.0,personas:[],activePersonaId:null,sidebarTab:"roles",storyUi:{},storySelection:null};
+let state={apiKey:"",model:"",roles:[],chats:{},activeRoleId:null,mode:"chat",busy:false,models:[],filtered:[],think:false,length:null,voice:false,voiceSpeed:1.0,personas:[],activePersonaId:null,sidebarTab:"roles",storyUi:{},storySelection:{storyId:null,childIds:[],kinds:{}}};
 const currentRole=()=>state.roles.find(r=>r.id===state.activeRoleId)||null;
 const currentHistory=()=>state.activeRoleId?(state.chats[state.activeRoleId]||[]):[];
 const currentPersona=()=>state.mode==="story"?null:(state.personas.find(p=>p.id===state.activePersonaId)||null);
@@ -25,6 +25,7 @@ function setSidebarTab(tab){
   if(tab==="personas"&&!personasAvailable())tab="roles";
   state.sidebarTab=tab;localStorage.setItem(LS.sidebarTab,tab);const isRoles=tab==="roles";
   const showPersonasTab=personasAvailable();
+  $("sidebarTabs").classList.toggle("hidden",!showPersonasTab);
   if($("tabPersonas"))$("tabPersonas").classList.toggle("hidden",!showPersonasTab);
   $("tabRoles").classList.toggle("active",isRoles);$("tabRoles").setAttribute("aria-selected",isRoles);$("tabPersonas").classList.toggle("active",!isRoles);$("tabPersonas").setAttribute("aria-selected",!isRoles);$("rolesPanel").classList.toggle("hidden",!isRoles);$("personasPanel").classList.toggle("hidden",isRoles);$("tabRoles").textContent=sidebarTitleFor();$("sidebarTitle").textContent=isRoles?sidebarTitleFor():"👥 Personas";$("sidebarSubtitle").textContent=isRoles?sidebarSubtitleFor():"Tap a persona to select it. The active persona is applied to all chats.";if(isRoles)renderRoles();else renderPersonas();
 }
@@ -80,16 +81,68 @@ function saveStoryUi(){saveJSON(LS.storyUi,getStoryUi());}
 function isStoryExpanded(id){return !!(getStoryUi()[id]&&getStoryUi()[id].expanded);}
 function setStoryExpanded(id,on){getStoryUi()[id]=Object.assign({},getStoryUi()[id]||{},{expanded:!!on});saveStoryUi();}
 function toggleStoryExpanded(id,force){const next=typeof force==="boolean"?force:!isStoryExpanded(id);setStoryExpanded(id,next);return next;}
-function saveStorySelection(sel){state.storySelection=sel||null;saveJSON(LS.storySel,state.storySelection);}
-function storyStatusFor(storyId){const ui=getStoryUi()[storyId]||{};return {storyId,expanded:!!ui.expanded,activeChildId:state.storySelection&&state.storySelection.storyId===storyId?state.storySelection.childId:null,lastChildId:ui.lastChildId||null};}
+function saveStorySelection(sel){
+  if(!sel){
+    state.storySelection={storyId:null,childIds:[],kinds:{}};
+  }else if(sel.storyId && sel.childId && sel.kind){
+    // Legacy single-select call - convert to multi-select
+    state.storySelection={storyId:sel.storyId,childIds:[sel.childId],kinds:{[sel.childId]:sel.kind}};
+  }else{
+    state.storySelection=sel;
+  }
+  saveJSON(LS.storySel,state.storySelection);
+}
+function storyStatusFor(storyId){
+  const ui=getStoryUi()[storyId]||{};
+  const hasSelection=state.storySelection && state.storySelection.storyId===storyId && state.storySelection.childIds?.length;
+  return {storyId,expanded:!!ui.expanded,activeChildIds:hasSelection?state.storySelection.childIds:[],lastChildId:ui.lastChildId||null};
+}
 function isStoryRoleVisibleInMode(r){return state.mode==="story"?!(!isStoryRole(r)):!!(!isStoryRole(r));}
 function isStoryRole(r){return !!(r&&r.isStory);}
 function storyCharacters(r){return Array.isArray(r.characters)?r.characters:[];}
 function storyElements(r){return Array.isArray(r.storyElements)?r.storyElements:[];}
-function sysStoryPrompt(r,child){const desc=r.description?("Story description:\n"+r.description):"";const blocks=[];if(child&&child.prompt)blocks.push((child.kind==="storyelement"?"Story element":"Character")+" — "+(child.name||"")+"\n"+child.prompt);if(r.prompt)blocks.push("Story backstory:\n"+String(r.prompt));if(desc)blocks.push(desc);return{r,child,prompt:blocks.join("\n\n")};}
-function currentStoryChild(){const sel=state.storySelection;if(!sel)return null;const r=state.roles.find(x=>x.id===sel.storyId);if(!r||!isStoryRole(r))return null;const list=sel.kind==="storyelement"?storyElements(r):storyCharacters(r);const found=list.find(c=>c.id===sel.childId)||null;return found?{role:r,child:{id:found.id,kind:sel.kind,name:found.name,prompt:found.prompt,thumbUrl:found.thumbUrl||""}}:null;}
-function activeChatId(){const cur=currentStoryChild();return cur?cur.role.id+"::"+cur.child.id:state.activeRoleId;}
-function activeChatHistory(){const id=activeChatId();return id?(state.chats[id]||[]):[];}
+
+function getAllStoryChildren(r){
+  return [
+    ...storyCharacters(r).map(c=>({...c,kind:"character"})),
+    ...storyElements(r).map(e=>({...e,kind:"storyelement"}))
+  ];
+}
+
+function buildStoryPrompt(r, selectedChildren){
+  const desc=r.description?("Story description:\n"+r.description):"";
+  const blocks=[];
+  if(r.prompt)blocks.push("Story backstory:\n"+String(r.prompt));
+  if(desc)blocks.push(desc);
+  if(selectedChildren && selectedChildren.length){
+    selectedChildren.forEach(child=>{
+      blocks.push((child.kind==="storyelement"?"Story element":"Character")+" — "+(child.name||"")+"\n"+child.prompt);
+    });
+  }
+  return blocks.join("\n\n");
+}
+
+function currentStoryChildren(){
+  const sel=state.storySelection;
+  if(!sel || !sel.storyId || !sel.childIds?.length)return [];
+  const r=state.roles.find(x=>x.id===sel.storyId);
+  if(!r || !isStoryRole(r))return [];
+  const allChildren=getAllStoryChildren(r);
+  return sel.childIds.map(id=>{
+    const found=allChildren.find(c=>c.id===id);
+    return found?{id:found.id,kind:sel.kinds[id]||"character",name:found.name,prompt:found.prompt,thumbUrl:found.thumbUrl||""}:null;
+  }).filter(Boolean);
+}
+
+function activeChatId(){
+  const sel=state.storySelection;
+  return (sel && sel.storyId) ? "story::"+sel.storyId : state.activeRoleId;
+}
+
+function activeChatHistory(){
+  const id=activeChatId();
+  return id?(state.chats[id]||[]):[];
+}
 function extractThumb(md){if(!md)return"";const m=md.match(/src\s*=\s*["']([^"']+)["']/i);if(m)return m[1];const u=md.match(/https?:\/\/[^\s)"'\]]+/);return u?u[0]:"";}
 function extractName(prompt){
   let m=prompt.match(/^\s*(?:Name|Character(?:\s*Name)?|Full\s*Name)\s*:\s*(.+)$/im);if(m)return m[1].trim().replace(/^\*\*|\*\*$/g,"");
@@ -152,7 +205,8 @@ async function addRole(url,msgEl){
 }
 function boot(){  state.apiKey=localStorage.getItem(LS.apiKey)||"";
   state.model=localStorage.getItem(LS.model)||"";
-  state.roles=getRoles();state.chats=getChats();
+  state.roles=getRoles();
+  state.chats=getChats();
   state.personas=getPersonas();
   state.activeRoleId=localStorage.getItem(LS.roleId)||null;
   state.activePersonaId=localStorage.getItem(LS.activePersonaId)||null;
@@ -220,9 +274,10 @@ function selectRole(id){state.activeRoleId=id;localStorage.setItem(LS.roleId,id)
 function renderChat(){
   const box=$("messages");box.innerHTML="";
   const r=currentRole();
-  const storyCur=currentStoryChild();
-  const displayName=storyCur?storyCur.child.name+" · "+r.name:(r?r.name:"No role selected");
-  const displayThumb=storyCur?(storyCur.child.thumbUrl||r.thumbUrl):(r?r.thumbUrl:"");
+  const storyChildren=currentStoryChildren();
+  const selectedNames=storyChildren.map(c=>c.name).join(", ");
+  const displayName=storyChildren.length?selectedNames+" · "+r.name:(r?r.name:"No role selected");
+  const displayThumb=storyChildren.length?(storyChildren[0].thumbUrl||r.thumbUrl):(r?r.thumbUrl:"");
   const p=currentPersona();
   $("hdrName").textContent=displayName||"No role selected";
   $("hdrImg").style.display=displayThumb?"block":"none";if(displayThumb)$("hdrImg").src=displayThumb;
@@ -237,8 +292,8 @@ function renderChat(){
   const hist=activeChatHistory();
   if(!hist.length){
     const e=document.createElement("div");e.className="emptyState";
-    const emptyTitle=storyCur?storyCur.child.name+" · "+r.name:r.name;
-    const emptyThumb=storyCur?(storyCur.child.thumbUrl||r.thumbUrl):(r.thumbUrl||"");
+    const emptyTitle=storyChildren.length?selectedNames+" · "+r.name:r.name;
+    const emptyThumb=storyChildren.length?(storyChildren[0].thumbUrl||r.thumbUrl):(r.thumbUrl||"");
     e.innerHTML=(emptyThumb?`<img src="${esc(emptyThumb)}" alt="">`:"")+"<br><b>"+esc(emptyTitle)+"</b><br><span class='small'>Say hello to start. In <b>"+state.mode+"</b> mode"+(state.mode==="story"?" only your latest message is sent (no history).":" the full conversation is sent each time.")+"</span>";
     box.appendChild(e);return;
   }
@@ -268,6 +323,11 @@ function renderRoles(){
       +`<span class="badge">${h.length?h.length+" msg":""}</span>`
       +`<button class="delBtn" aria-label="Delete ${esc(r.name)}" title="Delete">⋯</button>`;
     b.onclick=()=>{selectRole(r.id);closeSidebar();};
+    // Long-press for mobile context menu
+    let pressTimer;
+    b.addEventListener("touchstart",()=>{pressTimer=setTimeout(()=>{showCtxMenu({clientX:b.getBoundingClientRect().left,clientY:b.getBoundingClientRect().top,preventDefault:()=>{},stopPropagation:()=>{}},{id:r.id,type:"role",name:r.name});},500);},{passive:true});
+    b.addEventListener("touchend",()=>clearTimeout(pressTimer));
+    b.addEventListener("touchmove",()=>clearTimeout(pressTimer));
     b.oncontextmenu=(e)=>{showCtxMenu(e,{id:r.id,type:"role",name:r.name});};
     b.querySelector(".delBtn").onclick=(e)=>{e.stopPropagation();showCtxMenu(e,{id:r.id,type:"role",name:r.name});};
     roleBox.appendChild(b);
@@ -287,29 +347,31 @@ function renderStories(){
       +`<button class="delBtn" aria-label="Delete ${esc(r.name)}" title="Delete">⋯</button>`;
     head.setAttribute("aria-expanded",expanded?"true":"false");
     head.onclick=()=>{toggleStoryExpanded(r.id);renderStories();};
+    // Long-press for mobile context menu
+    let pressTimer;
+    head.addEventListener("touchstart",()=>{pressTimer=setTimeout(()=>{showCtxMenu({clientX:head.getBoundingClientRect().left,clientY:head.getBoundingClientRect().top,preventDefault:()=>{},stopPropagation:()=>{}},{id:r.id,type:"story",name:r.name});},500);},{passive:true});
+    head.addEventListener("touchend",()=>clearTimeout(pressTimer));
+    head.addEventListener("touchmove",()=>clearTimeout(pressTimer));
     head.oncontextmenu=(e)=>{showCtxMenu(e,{id:r.id,type:"story",name:r.name});};
     head.querySelector(".delBtn").onclick=(e)=>{e.stopPropagation();showCtxMenu(e,{id:r.id,type:"story",name:r.name});};
     group.appendChild(head);
     const children=document.createElement("div");children.className="storyChildren";
-    const addChild=(child,kind,icon)=>{
-      const enabled = child.enabled !== false; // default true
-      const key=r.id+"::"+child.id;
+    const addChild=(child,kind)=>{
+      const key="story::"+r.id; // story-level chat key
       const h=state.chats[key]||[];const last=h[h.length-1];
-      const isActive=!!(state.storySelection&&state.storySelection.storyId===r.id&&state.storySelection.childId===child.id);
-      const b=document.createElement("button");b.className="storyChild"+(isActive?" active":"")+(enabled?"":" disabled");b.dataset.childId=child.id;b.dataset.kind=kind;
-      if(!enabled) b.disabled = true;
-      b.innerHTML=(child.thumbUrl?`<img src="${esc(child.thumbUrl)}" alt="" loading="lazy">`: (kind==="storyelement"?`<div class="childIcon">🧵</div>`:`<div class="avaFallback">${esc((child.name||"?")[0].toUpperCase())}</div>`))
-        +`<div class="meta"><div class="cname">${esc(child.name||kind)}${enabled?"":" 🚫"}</div><div class="cprev">${esc(last?last.content:(child.prompt||"No prompt"))}</div></div>`
+      const isSelected = state.storySelection && state.storySelection.storyId===r.id && state.storySelection.childIds && state.storySelection.childIds.includes(child.id);
+      const b=document.createElement("button");b.className="roleItem"+(isSelected?" active":"");b.dataset.childId=child.id;b.dataset.kind=kind;
+      const initial=child.name?child.name[0].toUpperCase():"?";
+      b.innerHTML=(child.thumbUrl?`<img src="${esc(child.thumbUrl)}" alt="" loading="lazy">`: `<div class="avaFallback">${esc(initial)}</div>`)
+        +`<div class="meta"><div class="rname">${esc(child.name||kind)}${isSelected?" ● Active":""}</div><div class="rprev">${esc(last?last.content:(child.prompt||"No prompt"))}</div></div>`
         +`<span class="badge">${h.length?h.length+" msg":""}</span>`
-        +`<button class="delBtn" aria-label="Delete ${esc(child.name)}" title="Delete">⋯</button>`;
-      b.onclick=()=>{if(enabled){selectStoryChild(r.id,child.id,kind);closeSidebar();}};
-      b.oncontextmenu=(e)=>{showCtxMenu(e,{id:child.id,type:"storyChild",name:child.name,storyId:r.id,childKind:kind});};
+        +`<button class="delBtn" aria-label="Delete ${esc(child.name)}" title="Delete">✕</button>`;
+      b.onclick=()=>{selectStoryChild(r.id,child.id,kind);};
       b.querySelector(".delBtn").onclick=(e)=>{e.stopPropagation();showCtxMenu(e,{id:child.id,type:"storyChild",name:child.name,storyId:r.id,childKind:kind});};
       children.appendChild(b);
     };
-    // Show ALL children (including disabled) so users can right-click to re-enable
     storyCharacters(r).forEach(c=>addChild(c,"character"));
-    storyElements(r).forEach(e=>addChild(e,"storyelement"));
+    storyElements(r).forEach(e=>addChild(e,"storyelement"))
     if(!storyCharacters(r).length&&!storyElements(r).length){const empty=document.createElement("div");empty.className="emptyStateSide";empty.textContent="No characters or story elements in this story yet.";children.appendChild(empty);}
     group.appendChild(children);
     box.appendChild(group);
@@ -319,13 +381,30 @@ function selectStoryChild(storyId,childId,kind){
   const r=state.roles.find(x=>x.id===storyId);if(!r)return;
   const list = kind==="storyelement" ? storyElements(r) : storyCharacters(r);
   const child = list.find(c=>c.id===childId);
-  if(!child || child.enabled===false){sys("This character/element is disabled.","err");return;}
+  if(!child){sys("Character/element not found.","err");return;}
+  
   state.activeRoleId=storyId;localStorage.setItem(LS.roleId,storyId);
-  saveStorySelection({storyId,childId,kind});
-  getStoryUi()[storyId]=Object.assign({},getStoryUi()[storyId]||{},{lastChildId:childId,lastKind:kind});saveStoryUi();
+  
+  const sel = (state.storySelection && state.storySelection.storyId===storyId)
+    ? {...state.storySelection}
+    : {storyId, childIds: [], kinds: {}};
+  
+  const idx = sel.childIds.indexOf(childId);
+  if(idx >= 0){
+    // Deselect
+    sel.childIds.splice(idx, 1);
+    delete sel.kinds[childId];
+    sys("➖ Removed "+child.name+" from context");
+  }else{
+    // Select
+    sel.childIds.push(childId);
+    sel.kinds[childId] = kind;
+    sys("➕ Added "+child.name+" to context");
+  }
+  
+  saveStorySelection(sel);
+  getStoryUi()[storyId]=Object.assign({},getStoryUi()[storyId]||{},{lastChildId:sel.childIds[0]||null,lastKind:sel.childIds[0]?sel.kinds[sel.childIds[0]]:"character"});saveStoryUi();
   renderRoles();renderChat();
-  const childName=(kind==="storyelement"?storyElements(r):storyCharacters(r)).find(c=>c.id===childId)||{};
-  sys("📖 "+(r.name||"Story")+" — "+(childName.name||childId)+(kind==="storyelement"?" (story element)":" (character)")+". Chats resume where you left off.");
 }
 function toggleStory(storyId){toggleStoryExpanded(storyId);renderStories();}
 function renderPersonas(){
@@ -541,16 +620,7 @@ function showCtxMenu(e, target){
   const isStoryChild = target.type === "storyChild";
   const name = target.name || "this item";
   
-  // For story children, check enabled state
-  let childEnabled = true;
-  if(isStoryChild && target.storyId && target.childKind){
-    const story = state.roles.find(r=>r.id===target.storyId);
-    if(story){
-      const list = target.childKind==="storyelement" ? story.storyElements : story.characters;
-      const child = list.find(c=>c.id===target.id);
-      if(child) childEnabled = child.enabled !== false; // default true
-    }
-  }
+
   
   let html = `
     <button role="menuitem" data-action="backup">${isPersona ? "👤" : isStoryChild ? "🧵" : "🗑"} Download .txt & delete ${esc(name)}</button>
@@ -558,11 +628,7 @@ function showCtxMenu(e, target){
     <button role="menuitem" class="danger" data-action="nobackup">🗑 Delete ${esc(name)} without backup</button>
   `;
   
-  // Add toggle for story children
-  if(isStoryChild){
-    html += `<hr>
-    <button role="menuitem" data-action="toggle">${childEnabled ? "🚫 Disable" : "✅ Enable"} ${esc(name)}</button>`;
-  }
+
   
   html += `<hr>
     <button role="menuitem" data-action="cancel">✕ Cancel</button>`;
@@ -577,7 +643,7 @@ function showCtxMenu(e, target){
       hideCtxMenu();
       if(action==="backup") handleCtxDelete(target, true);
       else if(action==="nobackup") handleCtxDelete(target, false);
-      else if(action==="toggle") handleCtxToggle(target);
+
     };
   });
 }
@@ -612,30 +678,7 @@ function handleCtxDelete(target, withBackup){
   sys("Unknown target.","err");return false;
 }
 
-function handleCtxToggle(target){
-  if(target.type!=="storyChild" || !target.storyId || !target.childKind){
-    sys("Cannot toggle: invalid target.","err");return false;
-  }
-  const story = state.roles.find(r=>r.id===target.storyId);
-  if(!story){
-    sys("Story not found.","err");return false;
-  }
-  const list = target.childKind==="storyelement" ? story.storyElements : story.characters;
-  const child = list.find(c=>c.id===target.id);
-  if(!child){
-    sys("Character/element not found.","err");return false;
-  }
-  child.enabled = !child.enabled;
-  saveRoles(state.roles);
-  if(!child.enabled && state.storySelection && state.storySelection.storyId===target.storyId && state.storySelection.childId===target.id){
-    saveStorySelection(null);
-    state.activeRoleId = target.storyId;
-    localStorage.setItem(LS.roleId, target.storyId);
-  }
-  renderRoles();renderChat();
-  sys((child.enabled?"✅ Enabled":"🚫 Disabled")+" "+target.name);
-  return true;
-}
+
 
 function clearChat(noBackup){
   if(!activeChatId()){sys("No chat to clear.");return;}
@@ -679,7 +722,9 @@ function resendLast(){
   sys("🔁 Resending your last message…");
   setBusy(true);
   const context=state.mode==="story"?[{role:"user",content:lastUser}]:h;
-  let sysPrompt=currentStoryChild()?sysStoryPrompt(role,currentStoryChild().child).prompt:(role.prompt||"");
+  let sysPrompt=state.mode==="story"
+    ? buildStoryPrompt(role, currentStoryChildren())
+    : (role.prompt||"");
   const persona=personasAvailable()?currentPersona():null;
   if(persona){sysPrompt+="\n\nUSER PERSONA:\n---\n"+persona.prompt;}
   if(state.think)sysPrompt+="\n\nYou may think step by step before replying if it helps.";
@@ -811,24 +856,35 @@ function handleCommand(raw){
   }
   if(cmd==="role"){if(!arg||arg.toLowerCase()!=="summary"){sys("Usage: .role summary — summarize this person's traits (not added to context)");return true;}roleSummary();return true;}
   if(cmd==="toggle"){
-    const child = currentStoryChild();
-    if(!child){sys("Not in a story or no character/element selected.","err");return true;}
-    const a = arg.toLowerCase();
-    const list = child.kind==="storyelement" ? storyElements(child.role) : storyCharacters(child.role);
-    const target = list.find(c=>c.id===child.child.id);
-    if(!target){sys("Character/element not found.","err");return true;}
-    if(a===""||a==="toggle"){target.enabled = !target.enabled;}
-    else if(a==="on"){target.enabled = true;}
-    else if(a==="off"){target.enabled = false;}
-    else {sys("Usage: .toggle [on|off|toggle]");return true;}
-    saveRoles(state.roles);
-    if(!target.enabled && state.storySelection && state.storySelection.storyId===child.role.id && state.storySelection.childId===target.id){
-      saveStorySelection(null);
-      state.activeRoleId = child.role.id;
-      localStorage.setItem(LS.roleId, child.role.id);
+    const a = arg.toLowerCase().trim();
+    const storyChildren = currentStoryChildren();
+    if(a){
+      // Toggle specific character/element by name or ID
+      const target = storyChildren.find(c=>c.id===a || c.name.toLowerCase()===a);
+      if(!target){
+        const allChildren = getAllStoryChildren(currentRole());
+        const found = allChildren.find(c=>c.id===a || c.name.toLowerCase()===a);
+        if(found){
+          // Toggle enabled state
+          found.enabled = !found.enabled;
+          saveRoles(state.roles);
+          sys((found.enabled?"✅ Enabled":"🚫 Disabled")+" "+found.name);
+        }else{
+          sys("Character/element not found: "+arg,"err");
+        }
+      }else{
+        // Toggle enabled state
+        target.enabled = !target.enabled;
+        saveRoles(state.roles);
+        sys((target.enabled?"✅ Enabled":"🚫 Disabled")+" "+target.name);
+      }
+    }else if(storyChildren.length){
+      // Show current selection
+      sys("📖 Selected in context: "+storyChildren.map(c=>c.name+(c.enabled?"":" 🚫")).join(", "));
+    }else{
+      sys("No characters/elements selected in context. Click on them in the sidebar to add/remove.");
     }
     renderRoles();renderChat();
-    sys((target.enabled?"✅ Enabled":"🚫 Disabled")+" "+target.name);
     return true;
   }
   if(cmd==="install"){const url=arg.split(/\s+/)[0]||"";if(!url){sys("Usage: .install https://gist.github.com/<user>/<id>");return true;}installGist(url);return true;}
@@ -848,7 +904,9 @@ async function sendMessage(){
   setBusy(true);
   const hist=activeChatHistory();
   const context=state.mode==="story"?[hist[hist.length-1]]:hist;
-  let sysPrompt=currentStoryChild()?sysStoryPrompt(role,currentStoryChild().child).prompt:(role.prompt||"");
+  let sysPrompt=state.mode==="story"
+    ? buildStoryPrompt(role, currentStoryChildren())
+    : (role.prompt||"");
   const persona=personasAvailable()?currentPersona():null;
   if(persona){sysPrompt+="\n\nUSER PERSONA:\n---\n"+persona.prompt;}
   if(state.think)sysPrompt+="\n\nYou may think step by step before replying if it helps.";
@@ -1151,5 +1209,6 @@ $("newGist").addEventListener("keydown",e=>{if(e.key==="Enter")$("addRoleBtn").c
 $("tabRoles").onclick=()=>setSidebarTab("roles");
 $("tabPersonas").onclick=()=>setSidebarTab("personas");
 $("newPersonaBtn").onclick=()=>{window.open("persona_maker.html","_blank");};
+$("newStoryBtn").onclick=()=>{window.open("story_creator.html","_blank");};
 window.addEventListener("resize",()=>{if(window.innerWidth>760)closeSidebar();});
 boot();

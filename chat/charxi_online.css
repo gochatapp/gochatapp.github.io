@@ -45,6 +45,16 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .sideTab{flex:1;background:var(--panel2);border:1px solid var(--line);color:var(--mut);padding:8px 12px;border-radius:10px;font-size:.85em;font-weight:600;transition:.15s}
 .sideTab:hover:not(.active){background:var(--bg);color:var(--txt);border-color:var(--acc)}
 .sideTab.active{background:var(--acc);border-color:var(--acc);color:#fff}
+.pageMenu{margin-top:10px}
+.pageMenu summary{padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:var(--panel2);color:var(--txt);font-size:.85em;font-weight:600;cursor:pointer;list-style:none}
+.pageMenu summary::-webkit-details-marker{display:none}
+.pageMenu summary::after{content:"▾";float:right;color:var(--mut)}
+.pageMenu[open] summary::after{content:"▴"}
+.pageMenu summary:hover{border-color:var(--acc)}
+.pageMenu summary:focus-visible,.pageMenu a:focus-visible{outline:2px solid var(--acc2);outline-offset:2px}
+.pageMenu nav{display:grid;gap:4px;padding:6px 0 0}
+.pageMenu a{display:block;padding:8px 12px;border-radius:8px;color:var(--mut);font-size:.85em;text-decoration:none}
+.pageMenu a:hover{background:var(--panel2);color:var(--txt)}
 
 #sidebar .findRolesLink:hover{background:var(--acc2)}
 #sidebar .findRolesLink:focus-visible{outline:2px solid #fff;outline-offset:2px}
@@ -70,9 +80,8 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 .storyGroup.expanded .storyChildren{display:block}
 .storyChild{display:flex;gap:10px;align-items:center;width:100%;text-align:left;background:none;padding:7px 9px;border-radius:10px;border:1px solid transparent;margin-bottom:2px}
 .storyChild:hover{background:var(--bg)}.storyChild.active{background:var(--bg);border-color:var(--acc)}
-.storyChild.disabled{opacity:.45;cursor:not-allowed;background:var(--panel2);border-color:var(--line)}
-.storyChild.disabled:hover{background:var(--panel2)}
-.storyChild.disabled .cname{color:var(--mut)}
+.storyChild.selected{background:var(--panel2);border-color:var(--acc)}
+.storyChild.selected:hover{background:var(--panel)}
 .storyChild img{width:30px;height:30px;border-radius:50%;object-fit:cover;background:#333;flex:none}
 .storyChild .avaFallback{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--acc),#35c3e8);display:flex;align-items:center;justify-content:center;font-weight:800;flex:none;font-size:.8em}
 .storyChild .childIcon{width:30px;height:30px;border-radius:50%;background:var(--panel2);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:.9em;flex:none}
